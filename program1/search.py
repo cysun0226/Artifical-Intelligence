@@ -5,6 +5,9 @@ seq_filename = str(sys.argv[1])
 sequence = []
 
 # main
-with open(seq_filename, "r") as seq_file:
-    line = seq_file.readline
-    print line
+seq_file = open(seq_filename, "r")
+lines = seq_file.readlines()
+seq_file.close()
+
+for seq in lines:
+    print(seq)
