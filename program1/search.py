@@ -3,7 +3,9 @@
 # by 0416045 cysun
 
 import sys
-from collections import namedtuple
+import math
+from heapq import *
+# from collections import namedtuple
 
 # test data
 # seq_filename = str(sys.argv[1])
@@ -74,8 +76,6 @@ def print_result(sol, cnt):
     print(sol[-1], end='')
     print(' Goal\n')
     print('step count = ' + str(cnt) + '\n')
-
-
 
 # BFS
 def BFS(seq, target):
@@ -205,7 +205,12 @@ def IDS(seq, target):
         if goal:
             break
 
+# A*
+def heuristic(p1, p2):
+    return math.floor(abs(p1.x - p2.x)/9) + math.floor(abs(p1.x - p2.x)/9)
 
+def A_star(arg):
+    pass
 
 # main
 seq_file = open(seq_filename, "r")
