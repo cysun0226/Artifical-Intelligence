@@ -90,10 +90,12 @@ def BFS(seq, target):
     visited = [pos]     # to avoid inserting the same node twice into the queue
 
     # keep looping until there are nodes still to be checked
+    step = 0
     while frontier:
         #print('\ncurrent frontier : \n')
         #for n in frontier:
         #    print(n)
+        step += 1
 
 
 
@@ -131,13 +133,42 @@ def BFS(seq, target):
 
     print(track[target][-1], end='')
     print(' Goal\n')
-
-    #for i in range(len(track[target])):
-    #    seq[i].dir = track[target][i].dir
-    #for i in range(len(seq)):
-    #    print(seq[i])
+    print('step count = ' + str(step) + '\n')
 
     return
+
+# IDS (iterative deepening search)
+# DLS
+def DLS(seq, node, level, target, limit, track):
+    level += 1
+    track.append(node)
+    new_pos = move(node.dir, node.dist, node.pos)
+    if new_pos == target:
+        return True
+    if level >= limit:
+        return False
+    for i in range(5):
+        new_node = Node(getDirName(i), seq[level].dist, new_pos)
+        DLS(seq, new_node, level, target, limit, track)
+
+
+
+def IDS(seq, target):
+    track = []
+    pos = Point(0,0)
+    goal = False
+    for level in range(len(seq)):
+        for i in range(5):
+            node = Node(getDirName(i), seq[level].dist, pos)
+            if DLS(seq, node, 0, target, level, track):
+                goal = True
+                break
+        if goal:
+            break
+
+    # print solution
+    print("IDS find solution")
+
 
 # main
 seq_file = open(seq_filename, "r")
@@ -163,3 +194,5 @@ for line in lines:
 
     if strategy == 'BFS':
         BFS(seq, target)
+    elif strategy == 'IDS':
+        IDS(seq, target)
