@@ -3,6 +3,7 @@
 # by 0416045 cysun
 
 import sys
+import time
 import math
 from heapq import *
 # from collections import namedtuple
@@ -70,7 +71,7 @@ def move(dir, dist, pos):
         new_pos.y -= dist
     return new_pos
 
-def print_result(sol, cnt):
+def print_result(sol, cnt, t):
     print('initial\t\t(0, 0)')
 
     for i in range(len(sol)-1):
@@ -78,10 +79,12 @@ def print_result(sol, cnt):
 
     print(sol[-1], end='')
     print(' Goal\n')
-    print('step count = ' + str(cnt) + '\n')
+    print('step count = ' + str(cnt))
+    print('cost time = ' + str(round(t*1000, 5)) + ' ms\n')
 
 # BFS
 def BFS(seq, target):
+    start = time.time()
     pos = Point(0,0)
     # start = seq[0]
 
@@ -111,9 +114,7 @@ def BFS(seq, target):
         #    print(n)
         step += 1
 
-
-
-        # pop shallowest node (first node) from queue
+        # pop the first frontier
         node = frontier.pop(0)
         explored.append(node)
 
@@ -143,16 +144,19 @@ def BFS(seq, target):
         #wait = input("\n(press anykey to contunine...)")
 
     # print solution
-    print_result(track[target], step)
+    end = time.time()
+    print_result(track[target], step, end-start)
 
     return
 
 # IDS (iterative deepening search)
 # DLS
 IDS_step = 0
+start = 0
 
 def DLS(seq, node, level, target, limit, track):
     global IDS_step
+    global start
     IDS_step += 1
     level += 1
     if level > limit:
@@ -171,7 +175,8 @@ def DLS(seq, node, level, target, limit, track):
     # wait = input("\n(press anykey to contunine...)")
 
     if node.pos == target:
-        print_result(track, IDS_step)
+        end = time.time()
+        print_result(track, IDS_step, end-start)
         #print('initial\t\t(0,0)')
         #for i in range(len(track)-1):
         #    print(track[i])
@@ -190,6 +195,7 @@ def DLS(seq, node, level, target, limit, track):
 
 
 def IDS(seq, target):
+    start = time.time()
     IDS_step = 0
     pos = Point(0,0)
     goal = False
@@ -218,6 +224,7 @@ def my_heuristic(p1, p2):
     return dist
 
 def A_star(seq, target, heur = 'default'):
+    start = time.time()
     pos = Point(0,0)
     root = Point(0,0)
     pri_queue = []
@@ -276,7 +283,8 @@ def A_star(seq, target, heur = 'default'):
             heappush(pri_queue, next)
 
     # print result
-    print_result(track[target], step)
+    end = time.time()
+    print_result(track[target], step, end-start)
 
 
 
