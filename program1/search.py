@@ -26,7 +26,6 @@ class Point(object):
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.cost = sys.maxsize
     def __str__(self):
         return '(' + str(self.x) + ', ' + str(self.y) + ')'
     def __eq__(self, other):
@@ -36,18 +35,19 @@ class Point(object):
             return False
     def __hash__(self):
         return 41 * (41 + self.x) + self.y
-    def __cmp__(self, other):
-        return cmp(self.val, other.val)
-
 
 class Node(object):
     def __init__(self, dir, dist, point):
         self.dir = dir
         self.dist = dist
         self.pos = point
+        self.cost = 0
+        self.heur = sys.maxsize
     def __str__(self):
         new_pos = move(self.dir, self.dist, self.pos)
         return '(' + self.dir + ') ' + str(self.dist) + '\t\t' + str(new_pos)
+    def __lt__(self, other):
+        return self.heur < other.heur
 
 class Sequence(object):
     def __init__(self, id, dist):
@@ -71,7 +71,7 @@ def move(dir, dist, pos):
     return new_pos
 
 def print_result(sol, cnt):
-    print('initial\t\t(0,0)')
+    print('initial\t\t(0, 0)')
 
     for i in range(len(sol)-1):
         print(sol[i])
@@ -130,6 +130,9 @@ def BFS(seq, target):
             if new_pos == target:
             # if new_pos == Point(-7, -2):
                 break
+
+            if len(track[new_pos]) > len(seq)+1:
+                continue
 
             for i in range(5):
                 # next seq
@@ -201,20 +204,81 @@ def IDS(seq, target):
             break
 
 # A*
+def print_queue(queue):
+    out_queue = nsmallest(len(queue), queue)
+    for n in out_queue:
+        print(str(n) + ' heur = ' + str(n.heur))
+
 def heuristic(p1, p2):
-    return math.floor(abs(p1.x - p2.x)/9) + math.floor(abs(p1.x - p2.x)/9)
+    return math.floor(abs(p1.x - p2.x)/9) + math.floor(abs(p1.y - p2.y)/9)
 
-def A_star(arg):
+def my_heuristic(p1, p2):
+    dist = (p1.x - p2.x)*(p1.x - p2.x) + (p1.y - p2.y)*(p1.y - p2.y)
+    dist = dist ** 0.5 # sqrt
+    return dist
+
+def A_star(seq, target, heur = 'default'):
     pos = Point(0,0)
+    root = Point(0,0)
     pri_queue = []
+    step = 5
 
+    # insert start point
     for i in range(5):
         next = Node(getDirName(i), seq[0].dist, pos)
+        new_pos = move(next.dir, next.dist, next.pos)
+        if heur == 'default':
+            next.heur = heuristic(new_pos, target)
+        else:
+            next.heur = my_heuristic(new_pos, target)
         heappush(pri_queue, next)
 
-    while priority_queue:
+    # print pri_queue
+    # print('\npri_queue = \n')
+    # while pri_queue:
+    #     node = heappop(pri_queue)
+    #     print(str(node) + '\tcost = ' + str(node.cost))
 
-        pass
+
+    track = {pos:[]}
+
+    while pri_queue:
+        step += 1
+        node = heappop(pri_queue)
+        new_pos = move(node.dir, node.dist, node.pos)
+
+        # print('\n-- pri_queue | pos = ' + str(new_pos) + ' -- \n')
+        # print_queue(pri_queue)
+
+
+        if (new_pos in track) and (len(track[new_pos]) < len(track[node.pos])+1):
+           continue
+        else:
+           track[new_pos] = [e for e in track[node.pos]]
+           track[new_pos].append(node)
+
+        if new_pos == target:
+            break
+
+        # print('\nlen(track[new_pos] = ' + str(len(track[new_pos])) + '\n')
+        # wait = input("\n(press anykey to contunine...)")
+
+        if len(track[new_pos]) >= len(seq)-1:
+            continue
+
+        for i in range(5): # add new frontier
+            next = Node(getDirName(i), seq[len(track[new_pos])].dist, new_pos)
+            next_pos = move(next.dir, next.dist, next.pos)
+            if heur == 'default':
+                next.heur = heuristic(next_pos, target)
+            else:
+                next.heur = my_heuristic(next_pos, target)
+            heappush(pri_queue, next)
+
+    # print result
+    print_result(track[target], step)
+
+
 
 # main
 seq_file = open(seq_filename, "r")
@@ -242,3 +306,7 @@ for line in lines:
         BFS(seq, target)
     elif strategy == 'IDS':
         IDS(seq, target)
+    elif strategy == 'A*':
+        A_star(seq, target)
+        print('\nsearch strategy = ' + strategy + '(my) \n')
+        A_star(seq, target, 'my')
