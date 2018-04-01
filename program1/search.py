@@ -26,6 +26,7 @@ class Point(object):
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        self.cost = sys.maxsize
     def __str__(self):
         return '(' + str(self.x) + ', ' + str(self.y) + ')'
     def __eq__(self, other):
@@ -35,6 +36,8 @@ class Point(object):
             return False
     def __hash__(self):
         return 41 * (41 + self.x) + self.y
+    def __cmp__(self, other):
+        return cmp(self.val, other.val)
 
 
 class Node(object):
@@ -138,14 +141,6 @@ def BFS(seq, target):
 
     # print solution
     print_result(track[target], step)
-    #print('initial\t\t(0,0)')
-
-    #for i in range(len(track[target])-1):
-    #    print(track[target][i])
-
-    #print(track[target][-1], end='')
-    #print(' Goal\n')
-    #print('step count = ' + str(step) + '\n')
 
     return
 
@@ -210,7 +205,16 @@ def heuristic(p1, p2):
     return math.floor(abs(p1.x - p2.x)/9) + math.floor(abs(p1.x - p2.x)/9)
 
 def A_star(arg):
-    pass
+    pos = Point(0,0)
+    pri_queue = []
+
+    for i in range(5):
+        next = Node(getDirName(i), seq[0].dist, pos)
+        heappush(pri_queue, next)
+
+    while priority_queue:
+
+        pass
 
 # main
 seq_file = open(seq_filename, "r")
