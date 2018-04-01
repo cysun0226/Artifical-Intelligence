@@ -52,9 +52,7 @@ class Sequence(object):
     def __str__(self):
         return '(' + self.dir + ') ' + str(self.dist)
 
-# BFS
-# ref: https://stackoverflow.com/questions/46383493/python-implement-breadth-first-search
-
+# functions
 def move(dir, dist, pos):
     new_pos = Point(pos.x, pos.y)
     if dir == 'x+':
@@ -67,6 +65,19 @@ def move(dir, dist, pos):
         new_pos.y -= dist
     return new_pos
 
+def print_result(sol, cnt):
+    print('initial\t\t(0,0)')
+
+    for i in range(len(sol)-1):
+        print(sol[i])
+
+    print(sol[-1], end='')
+    print(' Goal\n')
+    print('step count = ' + str(cnt) + '\n')
+
+
+
+# BFS
 def BFS(seq, target):
     pos = Point(0,0)
     # start = seq[0]
@@ -126,48 +137,74 @@ def BFS(seq, target):
         #wait = input("\n(press anykey to contunine...)")
 
     # print solution
-    print('initial\t\t(0,0)')
+    print_result(track[target], step)
+    #print('initial\t\t(0,0)')
 
-    for i in range(len(track[target])-1):
-        print(track[target][i])
+    #for i in range(len(track[target])-1):
+    #    print(track[target][i])
 
-    print(track[target][-1], end='')
-    print(' Goal\n')
-    print('step count = ' + str(step) + '\n')
+    #print(track[target][-1], end='')
+    #print(' Goal\n')
+    #print('step count = ' + str(step) + '\n')
 
     return
 
 # IDS (iterative deepening search)
 # DLS
+IDS_step = 0
+
 def DLS(seq, node, level, target, limit, track):
+    global IDS_step
+    IDS_step += 1
     level += 1
-    track.append(node)
-    new_pos = move(node.dir, node.dist, node.pos)
-    if new_pos == target:
-        return True
-    if level >= limit:
+    if level > limit:
         return False
+
+    update_track = [e for e in track]
+    update_track.append(node)
+
+    # print('\npos = ' + str(node.pos))
+    # print('\nlevel = ' + str(level))
+    #print('\n\n-- track (lv = ' + str(level) + ', limit = ' + str(limit) + ') --\n')
+    #for n in update_track:
+    #    print(n)
+
+    # print('new_pos = ' + str(new_pos))
+    # wait = input("\n(press anykey to contunine...)")
+
+    if node.pos == target:
+        print_result(track, IDS_step)
+        #print('initial\t\t(0,0)')
+        #for i in range(len(track)-1):
+        #    print(track[i])
+
+        #print(track[-1], end='')
+        #print(' Goal\n')
+        return True
+
+    new_pos = move(node.dir, node.dist, node.pos)
+
     for i in range(5):
         new_node = Node(getDirName(i), seq[level].dist, new_pos)
-        DLS(seq, new_node, level, target, limit, track)
+        if DLS(seq, new_node, level, target, limit, update_track):
+            return True
 
 
 
 def IDS(seq, target):
-    track = []
+    IDS_step = 0
     pos = Point(0,0)
     goal = False
     for level in range(len(seq)):
+        track = []
         for i in range(5):
-            node = Node(getDirName(i), seq[level].dist, pos)
+            node = Node(getDirName(i), seq[0].dist, pos)
             if DLS(seq, node, 0, target, level, track):
                 goal = True
                 break
         if goal:
             break
 
-    # print solution
-    print("IDS find solution")
 
 
 # main
