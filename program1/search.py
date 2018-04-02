@@ -123,8 +123,8 @@ def BFS(seq, target):
         # waitkey()
 
 
-        if len(frontier) >= max_frontier:
-            max_frontier = len(frontier)
+        # if len(frontier) >= max_frontier:
+        #     max_frontier = len(frontier)
         step += 1
         # pop the first frontier
         node = frontier.pop(0)
@@ -151,7 +151,7 @@ def BFS(seq, target):
 
     # print solution
     end = time.time()
-    print_result(track[goal], step, end-start, max_frontier)
+    print_result(track[goal], step, end-start)
 
     return
 
