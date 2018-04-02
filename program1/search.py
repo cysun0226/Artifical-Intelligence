@@ -59,6 +59,9 @@ class Sequence(object):
         return '(' + self.dir + ') ' + str(self.dist)
 
 # functions
+def waitkey():
+    wait = input("\n(press anykey to contunine...)")
+
 def move(dir, dist, pos):
     new_pos = Point(pos.x, pos.y)
     if dir == 'x+':
@@ -71,7 +74,7 @@ def move(dir, dist, pos):
         new_pos.y -= dist
     return new_pos
 
-def print_result(sol, cnt, t):
+def print_result(sol, cnt, t, max_f = 0):
     print('initial\t\t(0, 0)')
 
     for i in range(len(sol)-1):
@@ -80,14 +83,16 @@ def print_result(sol, cnt, t):
     print(sol[-1], end='')
     print(' Goal\n')
     print('step count = ' + str(cnt))
-    print('cost time = ' + str(round(t*1000, 5)) + ' ms\n')
+    print('cost time = ' + str(round(t*1000, 5)) + ' ms')
+    if max_f != 0:
+        print('max queue = ' + str(max_f))
+    print()
 
 # BFS
 def BFS(seq, target):
     start = time.time()
     pos = Point(0,0)
     # start = seq[0]
-
 
     # keep track of all visited nodes
     explored = []
@@ -108,12 +113,11 @@ def BFS(seq, target):
 
     # keep looping until there are nodes still to be checked
     step = 0
+    max_frontier = 0
     while frontier:
-        #print('\ncurrent frontier : \n')
-        #for n in frontier:
-        #    print(n)
+        if len(frontier) >= max_frontier:
+            max_frontier = len(frontier)
         step += 1
-
         # pop the first frontier
         node = frontier.pop(0)
         explored.append(node)
@@ -122,14 +126,10 @@ def BFS(seq, target):
 
         if new_pos not in track:
             visited.append(new_pos)
-            # print(track[node.pos])
             track[new_pos] = [e for e in track[node.pos]]
             track[new_pos].append(node)
 
-            # print(track[new_pos])
-
             if new_pos == target:
-            # if new_pos == Point(-7, -2):
                 break
 
             if len(track[new_pos]) > len(seq)+1:
@@ -141,11 +141,9 @@ def BFS(seq, target):
                 # print(len(track[new_pos]))
                 frontier.append(Node(getDirName(i), seq[len(track[new_pos])].dist, new_pos))
 
-        #wait = input("\n(press anykey to contunine...)")
-
     # print solution
     end = time.time()
-    print_result(track[target], step, end-start)
+    print_result(track[target], step, end-start, max_frontier)
 
     return
 
@@ -162,21 +160,27 @@ def DLS(seq, node, level, target, limit, track):
     if level > limit:
         return False
 
+
+
+    # update_track = [e for e in track[node.pos]]
     update_track = [e for e in track]
     update_track.append(node)
 
     # print('\npos = ' + str(node.pos))
     # print('\nlevel = ' + str(level))
-    #print('\n\n-- track (lv = ' + str(level) + ', limit = ' + str(limit) + ') --\n')
-    #for n in update_track:
+    # print('\n\n-- track (lv = ' + str(level) + ', limit = ' + str(limit) + ') --\n')
+    # for n in update_track:
     #    print(n)
-
+    #
     # print('new_pos = ' + str(new_pos))
     # wait = input("\n(press anykey to contunine...)")
 
-    if node.pos == target:
+    new_pos = move(node.dir, node.dist, node.pos)
+
+    if new_pos == target:
         end = time.time()
-        print_result(track, IDS_step, end-start)
+        # print_result(track[target], IDS_step, end-start)
+        print_result(update_track, IDS_step, end-start)
         #print('initial\t\t(0,0)')
         #for i in range(len(track)-1):
         #    print(track[i])
@@ -185,21 +189,30 @@ def DLS(seq, node, level, target, limit, track):
         #print(' Goal\n')
         return True
 
-    new_pos = move(node.dir, node.dist, node.pos)
+    # if new_pos in track:
+    #     if len(update_track) < len(track[new_pos]):
+    #         return False
+    #
+    # track[new_pos] = update_track
+
 
     for i in range(5):
         new_node = Node(getDirName(i), seq[level].dist, new_pos)
+        # if DLS(seq, new_node, level, target, limit, track):
         if DLS(seq, new_node, level, target, limit, update_track):
             return True
 
 
 
 def IDS(seq, target):
+    global start
+    global IDS_step
     start = time.time()
     IDS_step = 0
     pos = Point(0,0)
     goal = False
     for level in range(len(seq)):
+        # track = {pos:[]}
         track = []
         for i in range(5):
             node = Node(getDirName(i), seq[0].dist, pos)
@@ -228,7 +241,8 @@ def A_star(seq, target, heur = 'default'):
     pos = Point(0,0)
     root = Point(0,0)
     pri_queue = []
-    step = 5
+    step = 0
+    max_queue = 0
 
     # insert start point
     for i in range(5):
@@ -240,16 +254,11 @@ def A_star(seq, target, heur = 'default'):
             next.heur = my_heuristic(new_pos, target)
         heappush(pri_queue, next)
 
-    # print pri_queue
-    # print('\npri_queue = \n')
-    # while pri_queue:
-    #     node = heappop(pri_queue)
-    #     print(str(node) + '\tcost = ' + str(node.cost))
-
-
     track = {pos:[]}
 
     while pri_queue:
+        if len(pri_queue) >= max_queue:
+            max_queue = len(pri_queue)
         step += 1
         node = heappop(pri_queue)
         new_pos = move(node.dir, node.dist, node.pos)
@@ -284,7 +293,7 @@ def A_star(seq, target, heur = 'default'):
 
     # print result
     end = time.time()
-    print_result(track[target], step, end-start)
+    print_result(track[target], step, end-start, max_queue)
 
 
 
