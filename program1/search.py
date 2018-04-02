@@ -42,9 +42,10 @@ class Node(object):
         self.dir = dir
         self.dist = dist
         self.pos = point
-        # self.predecessor = Node('S', 0, Point(0,0))
+        self.predecessor = None
         self.cost = 0
         self.heur = sys.maxsize
+        self.depth = 0
     def __str__(self):
         new_pos = move(self.dir, self.dist, self.pos)
         return '(' + self.dir + ') ' + str(self.dist) + '\t\t' + str(new_pos)
@@ -62,6 +63,12 @@ class Sequence(object):
 # functions
 def waitkey():
     wait = input("\n(press anykey to contunine...)")
+
+def print_frontier(frontier):
+    print('\ncurrent frontier : \n')
+    for n in frontier:
+       print(n)
+    waitkey()
 
 def move(dir, dist, pos):
     new_pos = Point(pos.x, pos.y)
@@ -90,68 +97,52 @@ def print_result(sol, cnt, t, max_f = 0):
     print()
 
 # BFS
+def trace_BFS(node):
+    track = []
+    while (node.pos.x != 0) or (node.pos.y != 0):
+        track.append(node)
+        node = node.predecessor
+    track.append(node)
+    return list(reversed(track))
+
 def BFS(seq, target):
     start = time.time()
     pos = Point(0,0)
-    goal = Point(0,0)
-    # start = seq[0]
 
-    # keep track of all visited nodes
-    explored = []
-
-    # keep track of nodes to be checked
+    # push start into frontier
     frontier = []
     for i in range(5):
-        frontier.append(Node(getDirName(i), seq[0].dist, pos))
-    # frontier = [ Node('x+', seq[0].dist, pos), Node('y+', seq[0].dist, pos),
-    #              Node('x-', seq[0].dist, pos), Node('y-', seq[0].dist, pos),
-    #              Node('skip', seq[0].dist)]
-
-    level = 0
-    track = {pos:[]}         # this dict keeps track of levels
-    # levels[start] = 0    # depth of start node is 0
-
-    visited = [pos]     # to avoid inserting the same node twice into the queue
-
-    # keep looping until there are nodes still to be checked
+        new_node = Node(getDirName(i), seq[0].dist, pos)
+        new_node.depth = 1
+        new_node.predecessor = pos
+        frontier.append(new_node)
     step = 0
     max_frontier = 0
+    # keep searching if there is node in the frontier
     while frontier:
-        # print('\ncurrent frontier : \n')
-        # for n in frontier:
-        #    print(n)
-        # waitkey()
-
-
         # if len(frontier) >= max_frontier:
         #     max_frontier = len(frontier)
         step += 1
         # pop the first frontier
         node = frontier.pop(0)
-        explored.append(node)
-
         new_pos = move(node.dir, node.dist, node.pos)
 
-        # visited.append(new_pos)
-        track[new_pos] = [e for e in track[node.pos]]
-        track[new_pos].append(node)
-
+        # reach target
         if new_pos.x == target.x and new_pos.y == target.y:
-            goal = new_pos
+            end = time.time()
+            print_result(trace_BFS(node), step, end-start)
             break
 
-        if len(track[new_pos]) > len(seq)-1:
+        # to the end of the depth
+        if node.depth > len(seq)-1:
             continue
 
+        # add new node into frontier
         for i in range(5):
-            # next seq
-            next = move(getDirName(i), node.dist, node.pos)
-            # print(len(track[new_pos]))
-            frontier.append(Node(getDirName(i), seq[len(track[new_pos])].dist, new_pos))
-
-    # print solution
-    end = time.time()
-    print_result(track[goal], step, end-start)
+            new_node = Node(getDirName(i), seq[node.depth].dist, new_pos)
+            new_node.predecessor = node
+            new_node.depth = node.depth + 1
+            frontier.append(new_node)
 
     return
 
