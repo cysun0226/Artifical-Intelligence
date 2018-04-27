@@ -5,18 +5,17 @@ from scipy.misc import imread
 import matplotlib.cbook as cbook
 import sys
 log_file = str(sys.argv[1])
+img_name = log_file.split('.')[0]
 
 # the location of the program
 # print(os.getcwd())
 
-
-
 # chessboard mapping
 origin_x = 2.55
 origin_y = 6.65
-scale_x = 0.43
+scale_x = 0.428
 shift_x = -0.2145
-scale_y = -0.3345
+scale_y = -0.33475
 
 def chessboard_mapping(pos):
     x = 0
@@ -109,4 +108,5 @@ plt.imshow(img, zorder=0, extent=[0.5, 8.0, 1.0, 7.0])
 plt.xticks([])
 plt.yticks([])
 plt.axis('off')
+# plt.savefig(img_name + '.png')
 plt.show()
