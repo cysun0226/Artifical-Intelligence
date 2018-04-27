@@ -1,3 +1,9 @@
 *.txt
 *.java
-
+*.png
+*.zip
+*.spec
+show_chessboard.exe
+game-project/chessboard/build/*
+game-project/chessboard/dist/*
+game-project/chessboard/__pycache__/*
