@@ -1,7 +1,3 @@
-# AI program 1
-# BFS, IDS, A*
-# by 0416045 cysun
-
 import sys
 import time
 import math
@@ -27,13 +23,6 @@ class Point(object):
         self.y = y
     def __str__(self):
         return '(' + str(self.x) + ', ' + str(self.y) + ')'
-    # def __eq__(self, other):
-    #     if isinstance(other, self.__class__):
-    #         return (self.x == other.x) and (self.y == other.y)
-    #     else:
-    #         return False
-    # def __hash__(self):
-    #     return 41 * (41 + self.x) + self.y
 
 class Node(object):
     def __init__(self, dir, dist, point):
@@ -59,15 +48,6 @@ class Sequence(object):
         return '(' + self.dir + ') ' + str(self.dist)
 
 # functions
-def waitkey():
-    wait = input("\n(press anykey to contunine...)")
-
-def print_frontier(frontier):
-    print('\ncurrent frontier : \n')
-    for n in frontier:
-       print(n)
-    waitkey()
-
 def move(dir, dist, pos):
     new_pos = Point(pos.x, pos.y)
     if dir == 'x+':
@@ -116,11 +96,8 @@ def BFS(seq, target):
         new_node.predecessor = pos
         frontier.append(new_node)
     step = 0
-    max_frontier = 0
     # keep searching if there is node in the frontier
     while frontier:
-        if len(frontier) >= max_frontier:
-            max_frontier = len(frontier)
         step += 1
         # pop the first frontier
         node = frontier.pop(0)
@@ -129,7 +106,7 @@ def BFS(seq, target):
         # reach target
         if new_pos.x == target.x and new_pos.y == target.y:
             end = time.time()
-            print_result(trace_BFS(node), step, end-start, max_frontier)
+            print_result(trace_BFS(node), step, end-start)
             break
 
         # to the end of the depth
@@ -158,41 +135,20 @@ def DLS(seq, node, level, target, limit, track):
         return False
 
     IDS_step += 1
-
-    # update_track = [e for e in track[node.pos]]
     update_track = [e for e in track]
     update_track.append(node)
-
-    # print('\nIDS step = ' + str(IDS_step))
-    # print('\npos = ' + str(node.pos))
-    # print('\nlevel = ' + str(level))
-    # print('\n\n-- track (lv = ' + str(level) + ', limit = ' + str(limit) + ') --\n')
-    # for n in update_track:
-    #    print(n)
-    #
-    # waitkey()
-
     new_pos = move(node.dir, node.dist, node.pos)
 
+    # reach target
     if new_pos.x == target.x and new_pos.y == target.y:
         end = time.time()
         print_result(update_track, IDS_step, end-start)
         return True
 
-    # if new_pos in track:
-    #     if len(update_track) < len(track[new_pos]):
-    #         return False
-    #
-    # track[new_pos] = update_track
-
-
     for i in range(5):
         new_node = Node(getDirName(i), seq[level].dist, new_pos)
-        # if DLS(seq, new_node, level, target, limit, track):
         if DLS(seq, new_node, level, target, limit, update_track):
             return True
-
-
 
 def IDS(seq, target):
     global start
@@ -202,7 +158,6 @@ def IDS(seq, target):
     IDS_step = 0
     goal = False
     for level in range(len(seq)):
-        # track = {pos:[]}
         track = []
         for i in range(5):
             node = Node(getDirName(i), seq[0].dist, pos)
@@ -213,11 +168,6 @@ def IDS(seq, target):
             break
 
 # A*
-def print_queue(queue):
-    out_queue = nsmallest(len(queue), queue)
-    for n in out_queue:
-        print(str(n) + ' heur = ' + str(n.heur))
-
 def heuristic(p1, p2):
     return math.floor(abs(p1.x - p2.x)/9) + math.floor(abs(p1.y - p2.y)/9)
 
@@ -254,22 +204,17 @@ def A_star(seq, target, heur = 'default'):
         node = heappop(pri_queue)
         new_pos = move(node.dir, node.dist, node.pos)
 
-        # print('\n-- pri_queue | pos = ' + str(new_pos) + ' -- \n')
-        # print_queue(pri_queue)
-
-
+        # keep track of each node
         if (new_pos in track) and (len(track[new_pos]) < len(track[node.pos])+1):
            continue
         else:
            track[new_pos] = [e for e in track[node.pos]]
            track[new_pos].append(node)
 
+        # reach target
         if new_pos.x == target.x and new_pos.y == target.y:
             goal = new_pos
             break
-
-        # print('\nlen(track[new_pos] = ' + str(len(track[new_pos])) + '\n')
-        # wait = input("\n(press anykey to contunine...)")
 
         if len(track[new_pos]) >= len(seq)-1:
             continue
@@ -288,7 +233,6 @@ def A_star(seq, target, heur = 'default'):
     print_result(track[goal], step, end-start, max_queue)
 
 
-
 # main
 seq_file = open(seq_filename, "r")
 lines = seq_file.readlines()
@@ -301,8 +245,6 @@ for line in lines:
     strategy = line[0]
     del line[0]
     target = Point(int(line[0]), int(line[1]))
-    #print(target.x)
-    #print(target.y)
     del line[0:2]
     seq = []
     for i in range(len(line)):
