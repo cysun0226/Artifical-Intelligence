@@ -17,6 +17,7 @@ Agent::Agent(int team_number):
 
 void Agent::processStateInfo() {
   readState();
+  chessboard = ChessBoard(board);
 }
 
 // I/O

@@ -21,11 +21,17 @@ typedef struct Coordinate {
   int col;
   Coordinate();
   Coordinate(int r, int c);
+
+  Coordinate& operator = (Coordinate const &c) {
+    if (this == &c) return *this; //self assignment
+    this->row = c.row;
+    this->col = c.col;
+    return *this;
+  }
 } Coordinate;
 
 // overload << (for cout)
 std::ostream& operator << (std::ostream &o, const Coordinate& p);
-
 
 typedef enum { ME=1, OPPONENT=2, EMPTY=0 } STATE;
 typedef struct Block {
@@ -45,16 +51,19 @@ std::ostream& operator << (std::ostream &o, const Block& p);
 
 class ChessBoard {
 private:
-  Block blocks[217];
-  int state[217]; // 1-D array
+  Block block[217];
+  vector<int> state; // 1-D array
   vector<int> valid_pos, my_pos, opponent_pos;
   std::vector<int> board;
+
+  void initialize();
 
 public:
   // update
   void update();
 
   ChessBoard();
+  ChessBoard(std::vector<int> board);
 };
 
 
