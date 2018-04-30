@@ -90,23 +90,11 @@ void ChessBoard::initialize()
   printVector(shift, "shift");
 
   // x
-  for (size_t r = 0; r < 8; r++) {
-    for (size_t c = 0; c < shift[r]; c++) {
-      int tmp = (c>r)? z_bound[(8-r)+c] + r : z_bound[(8-r)+c] + c;
-      block[tmp].x = Coordinate(r, c);
-      cout << "block[" << tmp << "].x = " << block[tmp].x << endl;
-    }
-  }
-
-  waitKey();
-
-
-  // y
   for (size_t r = 0; r <= 8; r++) {
     for (size_t c = 0; c < shift[r]; c++) {
-      int tmp = (c >= 9)? z_bound[c] + r - (c-8)  : r+z_bound[c];
-      block[tmp].y = Coordinate(r, c);
-      // cout << "block[" << tmp << "] = " << block[tmp].y << endl;
+      int x_tmp = (c>r)? z_bound[(8-r)+c] + r : z_bound[(8-r)+c] + c;
+      block[x_tmp].x = Coordinate(r, c);
+      cout << "block[" << x_tmp << "].x = " << block[x_tmp].x << endl;
     }
   }
 
@@ -114,9 +102,30 @@ void ChessBoard::initialize()
 
   for (size_t r = 1; r <= 8; r++) {
     for (size_t c = 0; c < shift[8-r]; c++) {
-      int tmp = ((c+r)>=9)? z_bound[c+r+1] - (9-r) : z_bound[c+r] + (r+8);
-      block[tmp].y = Coordinate(r+8, c);
-      // cout << "block[" << tmp << "] = " << block[tmp].y << endl;
+      int x_tmp = (c>=8)? z_bound[c]+r+8 : z_bound[c]+r+c;
+      block[x_tmp].x = Coordinate(r+8, c);
+      cout << "block[" << x_tmp << "].x = " << block[x_tmp].x << endl;
+    }
+  }
+
+  waitKey();
+
+  // y
+  for (size_t r = 0; r <= 8; r++) {
+    for (size_t c = 0; c < shift[r]; c++) {
+      int y_tmp = (c >= 9)? z_bound[c] + r - (c-8)  : r+z_bound[c];
+      block[y_tmp].y = Coordinate(r, c);
+      // cout << "block[" << y_tmp << "] = " << block[y_tmp].y << endl;
+    }
+  }
+
+  waitKey();
+
+  for (size_t r = 1; r <= 8; r++) {
+    for (size_t c = 0; c < shift[8-r]; c++) {
+      int y_tmp = ((c+r)>=9)? z_bound[c+r+1] - (9-r) : z_bound[c+r] + (r+8);
+      block[y_tmp].y = Coordinate(r+8, c);
+      // cout << "block[" << y_tmp << "] = " << block[y_tmp].y << endl;
     }
   }
 
