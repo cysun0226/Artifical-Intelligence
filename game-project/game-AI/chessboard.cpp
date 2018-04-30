@@ -7,6 +7,15 @@
 void waitKey() {
   cout << "\nPress any key to continue ...";
   cin.get();
+  cout << endl;
+}
+
+void printVector(std::vector<int> v, string name) {
+  cout << "\n -- " << name << " -- \n" << endl;
+  for (size_t i = 0; i < v.size(); i++) {
+    cout << name << "[" << i << "] = " << v[i] << endl;
+  }
+  cout << endl;
 }
 
 /* struct */
@@ -75,38 +84,31 @@ void ChessBoard::initialize()
     z_bound.push_back(z_bound.back()+i);
   }
 
-  for (size_t i = 0; i < z_bound.size(); i++) {
-    cout << "z_bound[" << i << "] = " << z_bound[i] << endl;
-  }
+  z_bound.push_back(217);
 
-  waitKey();
+  printVector(z_bound, "z_bound");
+  printVector(shift, "shift");
 
   // x
   for (size_t r = 0; r <= 8; r++) {
     for (size_t c = 0; c < shift[r]; c++) {
       int tmp = (c >= 9)? z_bound[c] + r - (c-8)  : r+z_bound[c];
-      block[tmp].x = Coordinate(r, c);
-      cout << "block[" << tmp << "] = " << Coordinate(r, c) << endl;
-
+      block[tmp].y = Coordinate(r, c);
+      // cout << "block[" << tmp << "] = " << block[tmp].y << endl;
     }
   }
 
-  // for (size_t r = 0; r < 8; r++) {
-  //   for (size_t c = 0; c < shift[r]; c++) {
-  //     int tmp = (c >= 9)? z_bound[c] + r - (c-8)  : r+z_bound[c];
-  //     block[tmp].x = Coordinate(r, c);
-  //     cout << "block[" << tmp << "] = " << Coordinate(r, c) << endl;
-  //
-  //   }
-  // }
+  waitKey();
 
+  for (size_t r = 1; r <= 8; r++) {
+    for (size_t c = 0; c < shift[8-r]; c++) {
+      int tmp = ((c+r)>=9)? z_bound[c+r+1] - (9-r) : z_bound[c+r] + (r+8);
+      block[tmp].y = Coordinate(r+8, c);
+      cout << "block[" << tmp << "] = " << block[tmp].y << endl;
+    }
+  }
 
-  cout << "block[100].x = " << block[100].x << endl;
-  cout << "block[108].x = " << block[108].x << endl;
-  cout << "block[215].x = " << block[215].x << endl;
-  // system("pause");
-  cout << "\nPress any key to continue ..." << endl;
-  cin.get();
+  waitKey();
 
 
 
