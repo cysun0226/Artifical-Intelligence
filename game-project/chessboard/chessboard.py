@@ -27,7 +27,7 @@ def chessboard_mapping(pos):
         x = origin_x + shift_x*1 + scale_x*(pos-9)
         y = origin_y + scale_y
     elif pos >= 19 and pos < 29 :
-        x = origin_x + shift_x*2 + scale_x*(pos-29)
+        x = origin_x + shift_x*2 + scale_x*(pos-19)
         y = origin_y + scale_y*2
     elif pos >= 30 and pos < 42 :
         x = origin_x + shift_x*3 + scale_x*(pos-30)
@@ -91,6 +91,7 @@ for chess in chessboard:
     pos += 1
     if chess == 0:
         continue
+    print("draw " + str(pos))
     x.append(chessboard_mapping(pos)[0])
     y.append(chessboard_mapping(pos)[1])
     if chess == 1:
