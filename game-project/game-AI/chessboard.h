@@ -62,6 +62,7 @@ private:
   vector<int> state; // 1-D array
   vector<int> valid_pos, my_pos, opponent_pos;
   std::vector<int> board;
+  map<Coordinate, int> x_map, y_map, z_map;
 
   void initialize();
 
