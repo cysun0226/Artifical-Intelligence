@@ -36,9 +36,9 @@ typedef struct Coordinate {
 
 } Coordinate;
 
-// overload << (for cout)
 std::ostream& operator << (std::ostream &o, const Coordinate& p);
 
+// Block
 typedef enum { ME=1, OPPONENT=2, EMPTY=0 } STATE;
 typedef struct Block {
   Coordinate x;
@@ -52,16 +52,29 @@ typedef struct Block {
   Block();
 } Block;
 
-// overload << (for cout)
 std::ostream& operator << (std::ostream &o, const Block& p);
 
+// LABEL struct Line
+typedef enum { BLOCK, OPEN } STATUS;
 
+typedef struct Line {
+  std::vector<Block*> block;
+  int length;
+  // Block* head;
+  // Block* tail;
+  int head;
+  int tail;
+
+  Line();
+} Line;
+
+// LABEL Class Chess-Board
 class ChessBoard {
 private:
-  Block block[217];
-  vector<int> state; // 1-D array
-  vector<int> valid_pos, my_pos, opponent_pos;
   std::vector<int> board;
+  Block block[217];
+  Line line;
+  vector<int> valid_pos, my_pos, opponent_pos;
   map<Coordinate, int> x_map, y_map, z_map;
 
   void initialize();
@@ -69,6 +82,7 @@ private:
 public:
   // update
   void update();
+  void set_board(std::vector<int> v);
 
   ChessBoard();
   ChessBoard(std::vector<int> board);

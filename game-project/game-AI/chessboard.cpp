@@ -28,19 +28,24 @@ std::ostream& operator << (std::ostream &o, const Block& p) {
                 " | state: " << s;
 }
 
+// constructor
+Line::Line() {}
 
 /* chessboard */
 // LABEL Chess-Board
-ChessBoard::ChessBoard() {}
-ChessBoard::ChessBoard(std::vector<int> board) {
-  state.assign(board.begin(), board.end());
+ChessBoard::ChessBoard() { initialize(); }
+ChessBoard::ChessBoard(std::vector<int> b) {
   initialize();
+}
+
+void ChessBoard::set_board(std::vector<int> v) {
+  board.assign(v.begin(), v.end());
 }
 
 // LABEL CB::init
 void ChessBoard::initialize()
 {
-  cout << "\ninitialize chessboard in agent..." << endl;
+  cout << "\ninitialize chessboard in agent...\n" << endl;
 
   for (size_t i = 0; i < 217; i++) {
     block[i].state = EMPTY;
@@ -115,7 +120,19 @@ void ChessBoard::initialize()
 
   }
 
-  printPointerVector(block[100].neighbors, "block[100].neighbors");
-  printPointerVector(block[108].neighbors, "block[108].neighbors");
+}
+
+// LABEL CB::update
+void ChessBoard::update()
+{
+  for (int i = 0; i < 217; ++i) {
+    if (board[i] == EMPTY)
+      valid_pos.push_back(i);
+    if (board[i] == ME)
+      my_pos.push_back(i);
+    if (board[i] == OPPONENT)
+      opponent_pos.push_back(i);
+  }
+
 
 }
