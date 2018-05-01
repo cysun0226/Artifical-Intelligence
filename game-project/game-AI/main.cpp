@@ -6,7 +6,7 @@
 
 #define TEAM_NUMBER 19
 
-main() {
+int main() {
 
   Agent* agent = new Agent(TEAM_NUMBER);
 
