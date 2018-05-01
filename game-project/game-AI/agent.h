@@ -13,6 +13,7 @@
 #include <string>
 
 #include "chessboard.h"
+#include "debug.h"
 
 // LABEL Class Agent
 class Agent {
@@ -39,7 +40,7 @@ private:
 
 	// Get current board. 0: valid pos, 1: your pos, 2: opponent pos
 	// A list of int. e.g. [0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 2, 2, 0, 2...]
-	void readState();
+	bool readState();
 
 	/**
 	* Are you the winner of first game?
@@ -50,11 +51,12 @@ private:
 
 	int team_number;
 	string state_file, move_file;
-	int cur_move, next_first_move;
+	int prev_move, cur_move, next_first_move;
 	int first_winner;
 	bool game_stop;
+  bool new_state;
 
-	vector<int> board, valid_pos;
+	vector<int> board, valid_pos, prev_board;
   ChessBoard chessboard;
 };
 

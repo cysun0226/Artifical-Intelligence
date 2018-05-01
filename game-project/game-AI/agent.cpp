@@ -3,6 +3,7 @@
 // adopted from the sample code
 
 #include "agent.h"
+#include "debug.h"
 
 Agent::Agent(int team_number):
   team_number(team_number),
@@ -16,9 +17,10 @@ Agent::Agent(int team_number):
   }
 
 void Agent::processStateInfo() {
-  readState();
-  chessboard.set_board(board);
-  chessboard.update();
+  if(readState()) {
+    chessboard.set_board(board);
+    chessboard.update();
+  }
 }
 
 // I/O
@@ -26,12 +28,10 @@ bool isEmpty(std::ifstream& pFile) {
 	return pFile.peek() == std::ifstream::traits_type::eof();
 }
 
-void Agent::readState() {
+bool Agent::readState() {
   ifstream infile(state_file);
-	if (!infile.is_open()) return;
-	if (isEmpty(infile)) return;
-
-  cout << "start reading new state..." << endl;
+	if (!infile.is_open()) return false;
+	if (isEmpty(infile)) return false;
 
 	int move;
 	infile >> move;
@@ -45,12 +45,19 @@ void Agent::readState() {
 		board.push_back(x);
 	}
 
+  if (move == prev_move)
+    return false;
+
+  // waitKey();
+  cout << "start reading new state..." << endl;
+  prev_move = move;
+
 	infile >> first_winner;
 	infile.close();
 
 	if (move == -100) {
 		game_stop = true;
-		return;
+		return true;
 	}
 
 	if (move > cur_move ||
@@ -67,6 +74,8 @@ void Agent::readState() {
 				valid_pos.push_back(i);
 		}
 	}
+
+  return true;
 }
 
 int Agent::_getNextMove() {
