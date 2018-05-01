@@ -1,5 +1,4 @@
 import os
-import numpy as np
 import matplotlib.pyplot as plt
 from scipy.misc import imread
 import matplotlib.cbook as cbook
@@ -91,7 +90,7 @@ for chess in chessboard:
     pos += 1
     if chess == 0:
         continue
-    print("draw " + str(pos))
+    # print("draw " + str(pos))
     x.append(chessboard_mapping(pos)[0])
     y.append(chessboard_mapping(pos)[1])
     if chess == 1:
@@ -109,5 +108,5 @@ plt.imshow(img, zorder=0, extent=[0.5, 8.0, 1.0, 7.0])
 plt.xticks([])
 plt.yticks([])
 plt.axis('off')
-# plt.savefig(img_name + '.png')
-plt.show()
+plt.savefig(img_name + '.png')
+# plt.show()
