@@ -13,11 +13,11 @@ Agent::Agent(int team_number):
   {
     this->state_file = "state_" + to_string(team_number) + ".txt";
     this->move_file = "move_" + to_string(team_number) + ".txt";
+    chessboard = ChessBoard(board);
   }
 
 void Agent::processStateInfo() {
   readState();
-  chessboard = ChessBoard(board);
 }
 
 // I/O
