@@ -61,14 +61,15 @@ typedef enum { BLOCK, HALF_OPEN, OPEN } STATUS;
 typedef struct Line {
   std::vector<Block*> block;
   int length;
-  // int head; // OPEN or BLOCK?
-  // int tail;
   int state; // ME or OPPONENT?
   int status;
 
   Line();
   Line(vector<Block*> b, int l, int s, int ss);
 } Line;
+
+std::ostream& operator << (std::ostream &o, const Line& p);
+
 
 // LABEL Class Chess-Board
 class ChessBoard {

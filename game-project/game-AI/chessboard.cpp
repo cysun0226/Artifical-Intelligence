@@ -34,6 +34,14 @@ Line::Line(vector<Block*> b, int l, int s, int ss) :
 length(l), state(s), status(ss) {
     block.assign(b.begin(), b.end());
 }
+std::ostream& operator << (std::ostream &o, const Line& p) {
+    string s = (p.state == ME)? "ME" : (p.state == OPPONENT)? "OPPONENT" : "EMPTY";
+    string ss = (p.status == OPEN)? "OPEN" :
+                (p.status == HALF_OPEN)? "HALF_OPEN" : "BLOCK";
+    return o << "\nhead = " << *p.block[0] <<
+                "\nlength = " << p.length << ", state = " << s <<
+                ", status = " << ss << endl;
+}
 
 /* chessboard */
 // LABEL Chess-Board
@@ -44,6 +52,7 @@ ChessBoard::ChessBoard(std::vector<int> b) {
 
 void ChessBoard::set_board(std::vector<int> v) {
   board.assign(v.begin(), v.end());
+  // cout << "set board" << endl;
 }
 
 // LABEL CB::init
@@ -135,7 +144,9 @@ void ChessBoard::initialize()
 // LABEL CB::update
 void ChessBoard::update()
 {
-  for (int i = 0; i < 217; ++i) {
+  cout << "update chessboard...\n" << endl;
+
+  for (int i = 0; i < 217; i++) {
     block[i].state = board[i];
     if (board[i] == EMPTY)
       valid_pos.push_back(i);
@@ -143,16 +154,23 @@ void ChessBoard::update()
       my_pos.push_back(i);
     if (board[i] == OPPONENT)
       opponent_pos.push_back(i);
+
+    cout << "block[" << i << "].state = " << block[i].state << endl;
   }
 
+  waitKey();
+
   // count connective lines
+  cout << " - count connective lines...\n" << endl;
   map<Coordinate, int>* axiz[3] = { &x_map, &y_map, &z_map};
 
   for (int a = 0; a < 3; a++) {
+    // cout << "a = " << a << endl;
     for (int r = 0; r < 17; r++) {
       int length = 1, prev_state = -1, prev_length = 1;
       int head, tail, status;
       for (int c = 0; c < layer[c]; c++) {
+        // cout << "(r, c) = " << "(" << r << ", " << c << ")" << endl;
         int cur_state = block[(*axiz[a])[Coordinate(r, c)]].state;
         if ( cur_state != EMPTY && cur_state == prev_state)
           length++;
@@ -166,7 +184,7 @@ void ChessBoard::update()
           int line_length = (c == layer[c]-1)?  length : prev_length;
           int line_state = (c == layer[c]-1)?  cur_state : prev_state;
 
-          for (int i = start; i < line_length; i++)
+          for (int i = start; i < c; i++)
             block_list.push_back(&block[(*axiz[a])[Coordinate(r, i)]]);
 
           if (start > 0) {
@@ -185,6 +203,16 @@ void ChessBoard::update()
                    (head==OPEN || tail==OPEN)? HALF_OPEN : BLOCK;
 
           line.push_back(Line(block_list, line_length, line_state, status));
+
+          // cout << "cout"
+          cout << " -- line --" << endl;
+          cout << line.back() << endl;
+          printPointerVector(block_list, "block_list");
+          string s = (head == OPEN)? "OPEN" : "BLOCK";
+          cout << "head = " << s;
+          s = (tail == BLOCK)? "BLOCK" : "OPEN";
+          cout << ", tail = " << s << endl;
+          waitKey();
         }
 
         prev_state = cur_state;
@@ -193,4 +221,11 @@ void ChessBoard::update()
       }
     }
   }
+
+  // printPointerVector(line[0].block, "line[0].block");
+  // cout << line[0].block.size() << endl;
+  // cout << line[0].block[0] << endl;
+  // cout << line[0] << endl;
+  // printVector(line, "line");
+  waitKey();
 }
