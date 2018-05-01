@@ -156,9 +156,6 @@ void ChessBoard::update()
       opponent_pos.push_back(i);
   }
 
-  printVector(layer, "layer");
-  waitKey();
-
   // count connective lines
   cout << " - count connective lines...\n" << endl;
   map<Coordinate, int>* axiz[3] = { &x_map, &y_map, &z_map};
@@ -177,13 +174,6 @@ void ChessBoard::update()
 
         // connective
         if (prev_length > length || (c == layer[r]-1 && length>1)) {
-
-          cout << " -- line --\n" << endl;
-          cout << "current position = " << (*axiz[a])[Coordinate(r, c)] << endl;
-          cout << "prev_length = " << prev_length << ", length = " << length << endl;
-          cout << "(r, c) = " << "(" << r << ", " << c << ")" << endl;
-          cout << "layer[r] = " << layer[r] << endl << endl;
-
           std::vector<Block*> block_list;
           int start = (c == layer[r]-1 && length>1)?  c-(length-1) : c-prev_length;
           int end = (c == layer[r]-1 && length>1)?  c+1 : c;
@@ -210,13 +200,20 @@ void ChessBoard::update()
 
           line.push_back(Line(block_list, line_length, line_state, status));
 
-          cout << line.back() << endl;
-          printPointerVector(block_list, "block_list");
-          string s = (head == OPEN)? "OPEN" : "BLOCK";
-          cout << "head = " << s;
-          s = (tail == BLOCK)? "BLOCK" : "OPEN";
-          cout << ", tail = " << s << endl;
-          waitKey();
+          if(line_length >= 5 && line_state == ME)
+            win = true;
+          else if (line_length >= 5 && line_state == OPPONENT)
+            lose = true;
+
+          // test
+          // cout << " == line == " << endl;
+          // cout << line.back() << endl;
+          // printPointerVector(block_list, "block_list");
+          // string s = (head == OPEN)? "OPEN" : "BLOCK";
+          // cout << "head = " << s;
+          // s = (tail == BLOCK)? "BLOCK" : "OPEN";
+          // cout << ", tail = " << s << endl;
+          // waitKey();
         }
 
         prev_state = cur_state;
@@ -226,10 +223,7 @@ void ChessBoard::update()
     }
   }
 
-  // printPointerVector(line[0].block, "line[0].block");
-  // cout << line[0].block.size() << endl;
-  // cout << line[0].block[0] << endl;
-  // cout << line[0] << endl;
-  // printVector(line, "line");
+  // test
+  cout << "line.size() = " << line.size() << endl;
   waitKey();
 }
