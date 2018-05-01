@@ -35,6 +35,8 @@ int main(){
     state[92] = WHITE;
     state[104] = WHITE;
 
+    state[103] = WHITE;
+
     // ROUND
     fp << ROUND <<endl;
     // board
