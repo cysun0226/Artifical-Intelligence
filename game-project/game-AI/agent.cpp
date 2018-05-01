@@ -18,6 +18,7 @@ Agent::Agent(int team_number):
 void Agent::processStateInfo() {
   readState();
   chessboard.set_board(board);
+  chessboard.update();
 }
 
 // I/O
@@ -29,6 +30,8 @@ void Agent::readState() {
   ifstream infile(state_file);
 	if (!infile.is_open()) return;
 	if (isEmpty(infile)) return;
+
+  cout << "start reading new state..." << endl;
 
 	int move;
 	infile >> move;
