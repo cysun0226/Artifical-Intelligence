@@ -154,10 +154,9 @@ void ChessBoard::update()
       my_pos.push_back(i);
     if (board[i] == OPPONENT)
       opponent_pos.push_back(i);
-
-    cout << "block[" << i << "].state = " << block[i].state << endl;
   }
 
+  printVector(layer, "layer");
   waitKey();
 
   // count connective lines
@@ -169,8 +168,7 @@ void ChessBoard::update()
     for (int r = 0; r < 17; r++) {
       int length = 1, prev_state = -1, prev_length = 1;
       int head, tail, status;
-      for (int c = 0; c < layer[c]; c++) {
-        // cout << "(r, c) = " << "(" << r << ", " << c << ")" << endl;
+      for (int c = 0; c < layer[r]; c++) {
         int cur_state = block[(*axiz[a])[Coordinate(r, c)]].state;
         if ( cur_state != EMPTY && cur_state == prev_state)
           length++;
@@ -178,13 +176,21 @@ void ChessBoard::update()
           length = 1;
 
         // connective
-        if (prev_length > length || (c == layer[c]-1 && length>1)) {
-          std::vector<Block*> block_list;
-          int start = (c == layer[c]-1)?  c-length : c-prev_length;
-          int line_length = (c == layer[c]-1)?  length : prev_length;
-          int line_state = (c == layer[c]-1)?  cur_state : prev_state;
+        if (prev_length > length || (c == layer[r]-1 && length>1)) {
 
-          for (int i = start; i < c; i++)
+          cout << " -- line --\n" << endl;
+          cout << "current position = " << (*axiz[a])[Coordinate(r, c)] << endl;
+          cout << "prev_length = " << prev_length << ", length = " << length << endl;
+          cout << "(r, c) = " << "(" << r << ", " << c << ")" << endl;
+          cout << "layer[r] = " << layer[r] << endl << endl;
+
+          std::vector<Block*> block_list;
+          int start = (c == layer[r]-1 && length>1)?  c-(length-1) : c-prev_length;
+          int end = (c == layer[r]-1 && length>1)?  c+1 : c;
+          int line_length = (c == layer[r]-1 && length>1)?  length : prev_length;
+          int line_state = (c == layer[r]-1 && length>1)?  cur_state : prev_state;
+
+          for (int i = start; i < end; i++)
             block_list.push_back(&block[(*axiz[a])[Coordinate(r, i)]]);
 
           if (start > 0) {
@@ -204,8 +210,6 @@ void ChessBoard::update()
 
           line.push_back(Line(block_list, line_length, line_state, status));
 
-          // cout << "cout"
-          cout << " -- line --" << endl;
           cout << line.back() << endl;
           printPointerVector(block_list, "block_list");
           string s = (head == OPEN)? "OPEN" : "BLOCK";
