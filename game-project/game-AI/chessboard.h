@@ -62,7 +62,7 @@ typedef struct Line {
   std::vector<Block*> block;
   int length;
   int state; // ME or OPPONENT?
-  int status;
+  int status; // BLOCK, HALF_OPEN, OPEN
 
   Line();
   Line(vector<Block*> b, int l, int s, int ss);
@@ -77,6 +77,8 @@ private:
   std::vector<int> board;
   Block block[217];
   bool win, lose;
+  int utility;
+
   vector<Line> line;
   vector<int> layer;
   vector<int> valid_pos, my_pos, opponent_pos;
@@ -88,6 +90,7 @@ public:
   // update
   void update();
   void set_board(std::vector<int> v);
+  int calculate_utility();
 
   ChessBoard();
   ChessBoard(std::vector<int> board);

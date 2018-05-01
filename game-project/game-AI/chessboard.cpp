@@ -227,3 +227,18 @@ void ChessBoard::update()
   // cout << "line.size() = " << line.size() << endl;
   // waitKey();
 }
+
+// LABEL CB::utility
+int ChessBoard::calculate_utility()
+{
+  int utility;
+  for (int i = 0; i < line.size(); i++) {
+    if (line[i].length == 4 && line[i].status == OPEN) {
+      // ....
+    }
+
+    /* code */
+  }
+
+  return utility;
+}
