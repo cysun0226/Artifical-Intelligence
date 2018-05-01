@@ -28,8 +28,12 @@ std::ostream& operator << (std::ostream &o, const Block& p) {
                 " | state: " << s;
 }
 
-// constructor
+// constructor LABEL Line
 Line::Line() {}
+Line::Line(vector<Block*> b, int l, int s, int ss) :
+length(l), state(s), status(ss) {
+    block.assign(b.begin(), b.end());
+}
 
 /* chessboard */
 // LABEL Chess-Board
@@ -47,6 +51,8 @@ void ChessBoard::initialize()
 {
   cout << "\ninitialize chessboard in agent...\n" << endl;
 
+  win = false;
+  lose = false;
   for (size_t i = 0; i < 217; i++) {
     block[i].state = EMPTY;
     block[i].id = i;
@@ -60,11 +66,10 @@ void ChessBoard::initialize()
     shift.push_back(i);
     z_bound.push_back(z_bound.back()+i);
   }
-  for (int i = 16; i >= 10; i--){
+  for (int i = 16; i >= 9; i--){
     shift.push_back(i);
     z_bound.push_back(z_bound.back()+i);
   }
-  z_bound.push_back(217);
 
   for (size_t r = 0; r <= 8; r++) {
     for (size_t c = 0; c < shift[r]; c++) {
@@ -82,6 +87,7 @@ void ChessBoard::initialize()
     }
   }
 
+  layer.assign(shift.begin(), shift.end());
   // printVector(shift, "shift");
   // printVector(z_bound, "z_bound");
 
@@ -117,15 +123,20 @@ void ChessBoard::initialize()
       block[i].neighbors.push_back(& block[z_map[Coordinate(z_tmp.row, z_tmp.col-1)]]);
     if (block[i].z.col < shift[z_tmp.row]-1)
       block[i].neighbors.push_back(& block[z_map[Coordinate(z_tmp.row, z_tmp.col+1)]]);
-
   }
 
+  // test
+  // printPointerVector(block[0].neighbors, "block[0].neighbors");
+  // printPointerVector(block[100].neighbors, "block[100].neighbors");
+  // printPointerVector(block[108].neighbors, "block[108].neighbors");
+  // printPointerVector(block[216].neighbors, "block[216].neighbors");
 }
 
 // LABEL CB::update
 void ChessBoard::update()
 {
   for (int i = 0; i < 217; ++i) {
+    block[i].state = board[i];
     if (board[i] == EMPTY)
       valid_pos.push_back(i);
     if (board[i] == ME)
@@ -134,5 +145,52 @@ void ChessBoard::update()
       opponent_pos.push_back(i);
   }
 
+  // count connective lines
+  map<Coordinate, int>* axiz[3] = { &x_map, &y_map, &z_map};
 
+  for (int a = 0; a < 3; a++) {
+    for (int r = 0; r < 17; r++) {
+      int length = 1, prev_state = -1, prev_length = 1;
+      int head, tail, status;
+      for (int c = 0; c < layer[c]; c++) {
+        int cur_state = block[(*axiz[a])[Coordinate(r, c)]].state;
+        if ( cur_state != EMPTY && cur_state == prev_state)
+          length++;
+        else
+          length = 1;
+
+        // connective
+        if (prev_length > length || (c == layer[c]-1 && length>1)) {
+          std::vector<Block*> block_list;
+          int start = (c == layer[c]-1)?  c-length : c-prev_length;
+          int line_length = (c == layer[c]-1)?  length : prev_length;
+          int line_state = (c == layer[c]-1)?  cur_state : prev_state;
+
+          for (int i = start; i < line_length; i++)
+            block_list.push_back(&block[(*axiz[a])[Coordinate(r, i)]]);
+
+          if (start > 0) {
+            int head_neighbor = block[(*axiz[a])[Coordinate(r, start-1)]].state;
+            head = (head_neighbor == EMPTY)? OPEN : BLOCK;
+          }
+          else
+            head = BLOCK;
+
+          if (c != layer[c]-1)
+            tail = (cur_state == EMPTY)? OPEN : BLOCK;
+          else
+            tail = BLOCK;
+
+          status = (head==OPEN && tail==OPEN)? OPEN :
+                   (head==OPEN || tail==OPEN)? HALF_OPEN : BLOCK;
+
+          line.push_back(Line(block_list, line_length, line_state, status));
+        }
+
+        prev_state = cur_state;
+        prev_length = length;
+
+      }
+    }
+  }
 }

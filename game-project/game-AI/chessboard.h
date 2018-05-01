@@ -44,7 +44,7 @@ typedef struct Block {
   Coordinate x;
   Coordinate y;
   Coordinate z;
-  STATE state;
+  int state;
   int id; // number of array in state.txt
   std::vector<Block*> neighbors;
 
@@ -55,17 +55,19 @@ typedef struct Block {
 std::ostream& operator << (std::ostream &o, const Block& p);
 
 // LABEL struct Line
-typedef enum { BLOCK, OPEN } STATUS;
+typedef enum { BLOCK, HALF_OPEN, OPEN } STATUS;
+// typedef enum { BOTH_BLOCK, HALF_OPEN, BOTH_OPEN } STATUS;
 
 typedef struct Line {
   std::vector<Block*> block;
   int length;
-  // Block* head;
-  // Block* tail;
-  int head;
-  int tail;
+  // int head; // OPEN or BLOCK?
+  // int tail;
+  int state; // ME or OPPONENT?
+  int status;
 
   Line();
+  Line(vector<Block*> b, int l, int s, int ss);
 } Line;
 
 // LABEL Class Chess-Board
@@ -73,7 +75,9 @@ class ChessBoard {
 private:
   std::vector<int> board;
   Block block[217];
-  Line line;
+  bool win, lose;
+  vector<Line> line;
+  vector<int> layer;
   vector<int> valid_pos, my_pos, opponent_pos;
   map<Coordinate, int> x_map, y_map, z_map;
 
