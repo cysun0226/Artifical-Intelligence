@@ -224,6 +224,6 @@ void ChessBoard::update()
   }
 
   // test
-  cout << "line.size() = " << line.size() << endl;
-  waitKey();
+  // cout << "line.size() = " << line.size() << endl;
+  // waitKey();
 }
