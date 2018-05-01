@@ -63,15 +63,11 @@ void ChessBoard::initialize()
 
   for (size_t i = 0; i < 217; i++) {
     block[i].state = EMPTY;
-
     block[i].id = i;
-    // blocks[i].x = Coordinate(, );
-
-
   }
 
   // x, y, z
-  map<int, int> x_row, y_row;
+  map<Coordinate, int> x_map, y_map, z_map;
   std::vector<int> shift, z_bound;
   // shift.push_back(0);
   z_bound.push_back(0);
@@ -89,11 +85,14 @@ void ChessBoard::initialize()
     for (size_t c = 0; c < shift[r]; c++) {
       int x_tmp = (c>r)? z_bound[(8-r)+c] + r : z_bound[(8-r)+c] + c;
       block[x_tmp].x = Coordinate(r, c);
+      x_map[block[x_tmp].x] = x_tmp;
 
       int y_tmp = (c >= 9)? z_bound[c] + r - (c-8)  : r+z_bound[c];
       block[y_tmp].y = Coordinate(r, c);
+      y_map[block[y_tmp].x] = y_tmp;
 
       block[z_bound[r]+c].z = Coordinate(r, c);
+      z_map[block[z_bound[r]+c].z] = z_bound[r]+c;
       // cout << "block[" << z_bound[r]+c << "] = " << block[z_bound[r]+c].z << endl;
     }
   }
@@ -102,11 +101,34 @@ void ChessBoard::initialize()
     for (size_t c = 0; c < shift[8-r]; c++) {
       int x_tmp = (c>=8)? z_bound[c]+r+8 : z_bound[c]+r+c;
       block[x_tmp].x = Coordinate(r+8, c);
+      x_map[block[x_tmp].x] = x_tmp;
       int y_tmp = ((c+r)>=9)? z_bound[c+r+1] - (9-r) : z_bound[c+r] + (r+8);
       block[y_tmp].y = Coordinate(r+8, c);
+      y_map[block[y_tmp].y] = y_tmp;
 
       block[z_bound[r+8]+c].z = Coordinate(r, c);
+      z_map[block[z_bound[r+8]+c].z] = z_bound[r+8]+c;
     }
+  }
+
+  // neighbors
+  for (size_t i = 0; i < 217; i++) {
+    Coordinate tmp;
+    // if (block[i].x.row > 0) { block[i].neighbors.push_back(&x_map[Coordinate(block[i].x.row-1, block[i].x.col)]); }
+    // if (block[i].x.row <= 16) { tmp = block[i].x; tmp.row++; block[i].neighbors.push_back(&block[x_map[tmp]]); }
+    // if (block[i].x.col > 0) { tmp = block[i].x; tmp.col--; block[i].neighbors.push_back(&x_map[tmp]); }
+    // if (block[i].x.col <= 16) { tmp = block[i].x; tmp.col++; block[i].neighbors.push_back(&x_map[tmp]); }
+    //
+    // if (block[i].y.row > 0) { tmp = block[i].y; tmp.row--; block[i].neighbors.push_back(&y_map[tmp]); }
+    // if (block[i].y.row <= 16) { tmp = block[i].y; tmp.row++; block[i].neighbors.push_back(&y_map[tmp]); }
+    // if (block[i].y.col > 0) { tmp = block[i].y; tmp.col--; block[i].neighbors.push_back(&y_map[tmp]); }
+    // if (block[i].y.col <= 16) { tmp = block[i].y; tmp.col++; block[i].neighbors.push_back(&y_map[tmp]); }
+    //
+    // if (block[i].z.row > 0) { tmp = block[i].z; tmp.row--; block[i].neighbors.push_back(&z_map[tmp]); }
+    // if (block[i].z.row <= 16) { tmp = block[i].z; tmp.row++; block[i].neighbors.push_back(&z_map[tmp]); }
+    // if (block[i].z.col > 0) { tmp = block[i].z; tmp.col--; block[i].neighbors.push_back(&z_map[tmp]); }
+    // if (block[i].z.col <= 16) { tmp = block[i].z; tmp.col++; block[i].neighbors.push_back(&z_map[tmp]); }
+
   }
 
 }

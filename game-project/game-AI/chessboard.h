@@ -22,12 +22,18 @@ typedef struct Coordinate {
   Coordinate();
   Coordinate(int r, int c);
 
+  // operator
   Coordinate& operator = (Coordinate const &c) {
     if (this == &c) return *this; //self assignment
     this->row = c.row;
     this->col = c.col;
     return *this;
   }
+
+  friend bool operator < (const Coordinate& l, const Coordinate& r) {
+        return (l.row != r.row)? l.row < r.row : l.col < r.col;
+  }
+
 } Coordinate;
 
 // overload << (for cout)
@@ -41,6 +47,7 @@ typedef struct Block {
   STATE state;
   int id; // number of array in state.txt
   std::vector<Block*> neighbors;
+
   Block(int id, Coordinate x, Coordinate y, Coordinate z, STATE s);
   Block();
 } Block;
