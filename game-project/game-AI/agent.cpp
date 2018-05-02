@@ -2,8 +2,11 @@
 // by cysun
 // adopted from the sample code
 
+#include <climits>
 #include "agent.h"
 #include "debug.h"
+
+#define MINIMAX_DEPTH 1
 
 Agent::Agent(int team_number):
   team_number(team_number),
@@ -79,10 +82,16 @@ bool Agent::readState() {
 }
 
 int Agent::_getNextMove() {
-  // int next = minimax(&ChessBoard);
-  // return minimax(&ChessBoard);
-  int next = 0;
-  return next;
+  int next_move = -1;
+  int max_utility = INT_MIN;
+  for (size_t i = 0; i < valid_pos.size(); i++) {
+    int new_utility = minimax(valid_pos[i], MINIMAX_DEPTH);
+    if ( new_utility > max_utility) {
+      max_utility = new_utility;
+      next_move = valid_pos[i];
+    }
+  }
+  return next_move;
 }
 
 void Agent::nextMove() {
@@ -105,3 +114,37 @@ bool Agent::isMyTurn() {
 bool Agent::isGameStop() {
   return game_stop;
 }
+
+// LABEL minimax
+int Agent::minimax(int new_pos, int depth) {
+  return 0;
+}
+
+// int minimax(int new_pos, int depth) {
+//   int best_utility;
+//   chessboard.put_one(new_pos);
+//   chessboard.update();
+//   // child of current start_state
+//   std::vector<int> valid_pos = chessboard.get_valid_pos();
+//
+//   if (start_state is win or lose || depth == 0 ) {
+//     chessboard.remove_one(new_pos);
+//     return chessboard.get_utility();
+//   }
+//
+//   if (state == opponent) {
+//     best_utility = INT_MAX;
+//     for (int i = 0; i < valid_pos.size(); i++) {
+//       best_utility = min(best_utility, minimax(valid_pos[i], depth-1));
+//     }
+//   }
+//   else { // our turn
+//     best_utility = INT_MIN;
+//     for (int i = 0; i < valid_pos.size(); i++) {
+//       best_utility = max(best_utility, minimax(valid_pos[i], depth-1));
+//     }
+//   }
+//
+//   chessboard.remove_one(new_pos);
+//   return best_utility;
+// }

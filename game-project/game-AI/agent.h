@@ -41,6 +41,7 @@ private:
 	// Get current board. 0: valid pos, 1: your pos, 2: opponent pos
 	// A list of int. e.g. [0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 2, 2, 0, 2...]
 	bool readState();
+  int minimax(int new_pos, int depth);
 
 	/**
 	* Are you the winner of first game?
