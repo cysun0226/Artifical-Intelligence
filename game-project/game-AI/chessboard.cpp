@@ -1,8 +1,9 @@
 /* AI game project */
 // by cysun
 
-# include "chessboard.h"
-# include "debug.h"
+#include <iterator>
+#include "chessboard.h"
+#include "debug.h"
 
 /* struct */
 // constructor
@@ -225,6 +226,97 @@ void ChessBoard::update()
   // test
   // cout << "line.size() = " << line.size() << endl;
   // waitKey();
+}
+
+// LABEL put_one
+void ChessBoard::put_one(int new_pos, int player)
+{
+  board[new_pos] = (player == ME)? 1 : 2;
+  block[new_pos].state = player;
+}
+
+void ChessBoard::remove_one(int new_pos) {
+  board[new_pos] = 0;
+  block[new_pos].state = EMPTY;
+}
+
+void ChessBoard::update_one(int new_pos) {
+  // three axiz
+  map<Coordinate, int>* axiz[3] = { &x_map, &y_map, &z_map};
+  for (int a = 0; a < 3; a++) {
+    // row
+    int r = (a == 0)? block[new_pos].x.row :
+            (a == 1)? block[new_pos].y.row :
+            block[new_pos].z.row;
+
+    // remove old lines that are on the same line as new_pos
+    vector<Line>::iterator iter = line.begin();
+    while (iter != line.end()) {
+      int line_row = (a == 0)? iter->block.front()->x.row :
+                     (a == 1)? iter->block.front()->y.row :
+                     iter->block.front()->z.row;
+      if (line_row == r)
+        iter = line.erase(iter);
+      else
+        ++iter;
+
+    }
+
+    // update line counting
+    int length = 1, prev_state = -1, prev_length = 1;
+    int head, tail, status;
+    for (int c = 0; c < layer[r]; c++) {
+      int cur_state = block[(*axiz[a])[Coordinate(r, c)]].state;
+      if ( cur_state != EMPTY && cur_state == prev_state)
+        length++;
+      else
+        length = 1;
+
+      // connective
+      if (prev_length > length || (c == layer[r]-1 && length>1)) {
+        std::vector<Block*> block_list;
+
+        int start = (c == layer[r]-1 && length>1)?  c-(length-1) : c-prev_length;
+        int end = (c == layer[r]-1 && length>1)?  c+1 : c;
+        int line_length = (c == layer[r]-1 && length>1)?  length : prev_length;
+        int line_state = (c == layer[r]-1 && length>1)?  cur_state : prev_state;
+
+        for (int i = start; i < end; i++)
+          block_list.push_back(&block[(*axiz[a])[Coordinate(r, i)]]);
+
+        if (start > 0) {
+          int head_neighbor = block[(*axiz[a])[Coordinate(r, start-1)]].state;
+          head = (head_neighbor == EMPTY)? OPEN : BLOCK;
+        }
+        else
+          head = BLOCK;
+
+        if (c != layer[c]-1)
+          tail = (cur_state == EMPTY)? OPEN : BLOCK;
+        else
+          tail = BLOCK;
+
+        status = (head==OPEN && tail==OPEN)? OPEN :
+                 (head==OPEN || tail==OPEN)? HALF_OPEN : BLOCK;
+
+        line.push_back(Line(block_list, line_length, line_state, status));
+
+        if(line_length >= 5 && line_state == ME)
+          win = true;
+        else if (line_length >= 5 && line_state == OPPONENT)
+          lose = true;
+
+        // test
+        // cout << " == line == " << endl;
+        // cout << line.back() << endl;
+        // printPointerVector(block_list, "block_list");
+        // string s = (head == OPEN)? "OPEN" : "BLOCK";
+        // cout << "head = " << s;
+        // s = (tail == BLOCK)? "BLOCK" : "OPEN";
+        // cout << ", tail = " << s << endl << endl;
+      }
+    }
+  }
 }
 
 // LABEL CB::utility

@@ -76,7 +76,6 @@ class ChessBoard {
 private:
   std::vector<int> board;
   Block block[217];
-  bool win, lose;
   int utility;
 
   vector<Line> line;
@@ -87,13 +86,20 @@ private:
   void initialize();
 
 public:
-  // update
+  bool win, lose;
+  // count lines
   void update();
+  // get board from Agent::readState
   void set_board(std::vector<int> v);
   int calculate_utility();
-  int get_utility();
+  int get_utility(); // return utility
+
+  void put_one(int new_pos, int player);
+  void remove_one(int new_pos);
+  void update_one(int new_pos);
+
   std::vector<int> get_valid_pos();
-  
+
 
   ChessBoard();
   ChessBoard(std::vector<int> board);
