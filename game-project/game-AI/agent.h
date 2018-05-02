@@ -1,5 +1,5 @@
 /* AI game project */
-// by cysun, Americano Ho and Kao Chu Ching
+// by cysun and Americano Ho
 
 #ifndef __AGENT_H__
 #define __AGENT_H__

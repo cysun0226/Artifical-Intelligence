@@ -1,5 +1,5 @@
 /* AI game project */
-// by cysun
+// by cysun, Americano Ho and Kao Chu Ching
 
 #include <iterator>
 #include "chessboard.h"
@@ -54,6 +54,10 @@ ChessBoard::ChessBoard(std::vector<int> b) {
 void ChessBoard::set_board(std::vector<int> v) {
   board.assign(v.begin(), v.end());
   // cout << "set board" << endl;
+}
+
+std::vector<int> ChessBoard::get_valid_pos() {
+  return valid_pos;
 }
 
 // LABEL CB::init
@@ -214,11 +218,98 @@ void ChessBoard::update()
           // cout << "head = " << s;
           // s = (tail == BLOCK)? "BLOCK" : "OPEN";
           // cout << ", tail = " << s << endl << endl;
-        }
 
+
+          /* utility */
+          //newly added-----------
+          if(line_state == ME && win == true)
+          {
+          		my_lines[6]++;
+          }
+          else if(line_state == OPPONENT && win == true)
+          {
+          		opponent_lines[6]++;
+          }
+          else if((line_length == 1) && (head == OPEN || tail == OPEN))
+          {
+          		if(line_state == ME)
+          		{
+          			my_lines[2]++; //150
+          		}
+          		else
+          		{
+          			opponent_lines[2]++; //-1000
+          		}
+          }
+          else if((line_length == 2) && (head == OPEN || tail == OPEN))
+          {
+
+          		if(line_state == ME)
+          		{
+          			if(head == OPEN && tail == OPEN) //live-2
+          			{
+          			    my_lines[3]++; //600
+          			}
+          			else //dead-2
+          			{
+          				my_lines[1]++; //120
+          			}
+          		}
+          		else
+          		{
+					if(head == OPEN && tail == OPEN) //live-2
+          			{
+          			    opponent_lines[4]++; //-5000
+          			}
+          			else //dead-2
+          			{
+          				opponent_lines[1]++; // -800
+          			}
+          		}
+          }
+           else if((line_length == 3) && (head == OPEN || tail == OPEN))
+          {
+
+          		if(line_state == ME)
+          		{
+          			if(head == OPEN && tail == OPEN) //live-3
+          			{
+          			    my_lines[4]++; //3500
+          			}
+          			else //dead-3
+          			{
+          				my_lines[2]++; //600
+          			}
+          		}
+          		else
+          		{
+					      if(head == OPEN && tail == OPEN) //live-3
+          			{
+          			    opponent_lines[4]++; //-5000
+          			}
+          			else //dead-3
+          			{
+          				opponent_lines[3]++; //-2000
+          			}
+          		}
+          }
+          else if((line_length == 4) && (head == OPEN || tail == OPEN))
+          {
+          		if(line_state == ME)
+          		{
+					       my_lines[5]++;
+          		}
+          		else
+          		{
+					       opponent_lines[5]++;
+          		}
+          }
+
+          // utility
+
+        }
         prev_state = cur_state;
         prev_length = length;
-
       }
     }
   }
@@ -322,14 +413,23 @@ void ChessBoard::update_one(int new_pos) {
 // LABEL CB::utility
 int ChessBoard::calculate_utility()
 {
-  int utility;
-  for (int i = 0; i < line.size(); i++) {
-    if (line[i].length == 4 && line[i].status == OPEN) {
-      // ....
-    }
-
-    /* code */
+  int new_utility = 0;
+  new_utility += my_lines[1];
+  new_utility -= opponent_lines[1]*5;
+  int temp = 1;
+  if( my_lines[6] > 0 ) return INT_MAX; //WIN
+  if( opponent_lines[6] > 0) return INT_MIN; // opponent WIN
+  for(int i = 2; i < 6; i++ )
+  {
+  		temp *= 100;
+  		new_utility+=my_lines[i] * temp;
+  		new_utility-=opponent_lines[i] * temp * 10;
   }
+ 
 
-  return utility;
+  return new_utility;
+}
+
+int ChessBoard::get_utility() {
+  return calculate_utility();
 }

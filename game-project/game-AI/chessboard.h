@@ -1,17 +1,19 @@
 /* AI game project */
-// by cysun
+// by cysun, Americano Ho and Kao Chu Ching
 
 #ifndef __CHESSBOARD_H__
 #define __CHESSBOARD_H__
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <vector>
 #include <string>
 #include <map>
 #include <math.h>
+#include <bits/stdc++.h>
 
 using namespace std;
 
@@ -83,6 +85,13 @@ private:
   vector<int> valid_pos, my_pos, opponent_pos;
   map<Coordinate, int> x_map, y_map, z_map;
 
+  // utility
+  // vector<int> opponent_lines(6,0);
+  // vector<int> my_lines(6,0);
+  vector<int> opponent_lines{vector<int>(6,0)};
+  vector<int> my_lines{vector<int>(6,0)};
+  int calculate_utility();
+
   void initialize();
 
 public:
@@ -91,7 +100,6 @@ public:
   void update();
   // get board from Agent::readState
   void set_board(std::vector<int> v);
-  int calculate_utility();
   int get_utility(); // return utility
 
   void put_one(int new_pos, int player);

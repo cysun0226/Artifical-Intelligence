@@ -142,6 +142,9 @@ ActAndUtil Agent::_minimax_impl(ChessBoard& s, int depth, float alpha, float bet
    *   and the heuristic board utility following this move
    */
 
+  cout << "start minimax" << endl;
+  waitKey();
+
   if (depth == 0 || s.win || s.lose) {
     return ActAndUtil(s.get_utility(), -1);
   }
