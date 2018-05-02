@@ -212,8 +212,7 @@ void ChessBoard::update()
           // string s = (head == OPEN)? "OPEN" : "BLOCK";
           // cout << "head = " << s;
           // s = (tail == BLOCK)? "BLOCK" : "OPEN";
-          // cout << ", tail = " << s << endl;
-          // waitKey();
+          // cout << ", tail = " << s << endl << endl;
         }
 
         prev_state = cur_state;

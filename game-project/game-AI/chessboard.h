@@ -91,6 +91,9 @@ public:
   void update();
   void set_board(std::vector<int> v);
   int calculate_utility();
+  int get_utility();
+  std::vector<int> get_valid_pos();
+  
 
   ChessBoard();
   ChessBoard(std::vector<int> board);
