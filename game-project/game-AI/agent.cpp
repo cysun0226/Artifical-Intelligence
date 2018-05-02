@@ -6,7 +6,7 @@
 #include "agent.h"
 #include "debug.h"
 
-#define MINIMAX_DEPTH 1
+#define MINIMAX_DEPTH 2
 
 Agent::Agent(int team_number):
   team_number(team_number),
@@ -117,8 +117,63 @@ bool Agent::isGameStop() {
 
 // LABEL minimax
 int Agent::minimax(int new_pos, int depth) {
-  return 0;
+  ActAndUtil result = _minimax_impl(chessboard,
+                                       depth,
+                                       INT_MIN,
+                                       INT_MAX,
+                                       //std::numeric_limits<float>::min(),
+                                       //std::numeric_limits<float>::max(),
+                                       ME);
+
+  return result.action;
 }
+
+ActAndUtil Agent::_minimax_impl(ChessBoard& s, int depth, float alpha, float beta, int color) {
+  /* Implementation of negamax with alphe-beta pruning
+   * Args:
+   *   s: current board state
+   *   depth: remained search depth
+   *   alpha: lower bound for pruning
+   *   beta: upper bound for pruning
+   *   color: 1: player max, -1: player min
+   *
+   * Return:
+   *   A struct of type `ActAndUtil` containing the best possible move
+   *   and the heuristic board utility following this move
+   */
+
+  if (depth == 0 || s.win || s.lose) {
+    return ActAndUtil(s.get_utility(), -1);
+  }
+
+  // float best_util = std::numeric_limits<float>::min();
+  float best_util = INT_MIN;
+  int best_action = -1;
+  int player = (color == 1)? ME : OPPONENT;
+
+  // iterate through reasonable moves
+  std::vector<int> reasonable_moves = s.get_valid_pos();
+  for (int i = 0; i < reasonable_moves.size(); i++) {
+    s.put_one(i, player);
+    s.update_one(i);
+
+    float return_util = -1 * _minimax_impl(s, -depth, -beta, -alpha, -color).util;
+    if (return_util > best_util) {
+      best_util = return_util;
+      best_action = i;
+    }
+    alpha = return_util > alpha? return_util : alpha;
+    if (alpha >= beta)
+      break;
+
+    s.remove_one(i);
+    s.update_one(i);
+  }
+
+  return ActAndUtil(best_util, best_action);
+}
+
+ActAndUtil::ActAndUtil(float u, int a) : util(u), action(a) {}
 
 // int minimax(int new_pos, int depth) {
 //   int best_utility;
