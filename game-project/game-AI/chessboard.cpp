@@ -4,6 +4,7 @@
 #include <iterator>
 #include "chessboard.h"
 #include "debug.h"
+#include <algorithm>
 
 /* struct */
 // constructor
@@ -149,7 +150,9 @@ void ChessBoard::initialize()
 // LABEL CB::update
 void ChessBoard::update()
 {
-  cout << "update chessboard...\n" << endl;
+  valid_pos.clear();
+  my_pos.clear();
+  opponent_pos.clear();
 
   for (int i = 0; i < 217; i++) {
     block[i].state = board[i];
@@ -161,8 +164,10 @@ void ChessBoard::update()
       opponent_pos.push_back(i);
   }
 
+  // printVector(valid_pos, "valid_pos");
+
   // count connective lines
-  cout << " - count connective lines...\n" << endl;
+  // cout << " - count connective lines..." << endl;
   map<Coordinate, int>* axiz[3] = { &x_map, &y_map, &z_map};
 
   for (int a = 0; a < 3; a++) {
@@ -317,6 +322,7 @@ void ChessBoard::update()
   // test
   // cout << "line.size() = " << line.size() << endl;
   // waitKey();
+  // cout << " - finish analyze lines.\n" << endl;
 }
 
 // LABEL put_one
@@ -324,11 +330,13 @@ void ChessBoard::put_one(int new_pos, int player)
 {
   board[new_pos] = (player == ME)? 1 : 2;
   block[new_pos].state = player;
+  valid_pos.erase(std::remove(valid_pos.begin(), valid_pos.end(), new_pos), valid_pos.end());
 }
 
 void ChessBoard::remove_one(int new_pos) {
   board[new_pos] = 0;
   block[new_pos].state = EMPTY;
+  valid_pos.push_back(new_pos);
 }
 
 void ChessBoard::update_one(int new_pos) {
@@ -418,14 +426,14 @@ int ChessBoard::calculate_utility()
   new_utility -= opponent_lines[1]*5;
   int temp = 1;
   if( my_lines[6] > 0 ) return INT_MAX; //WIN
-  if( opponent_lines[6] > 0) return INT_MIN; // opponent WIN
+  if( opponent_lines[6] > 0) return INT_MIN+1; // opponent WIN
   for(int i = 2; i < 6; i++ )
   {
   		temp *= 100;
   		new_utility+=my_lines[i] * temp;
   		new_utility-=opponent_lines[i] * temp * 10;
   }
- 
+
 
   return new_utility;
 }

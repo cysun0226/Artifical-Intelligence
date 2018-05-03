@@ -12,8 +12,9 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <math.h>
-#include <bits/stdc++.h>
+#include <climits>
+
+// #include <bits/stdc++.h>
 
 using namespace std;
 
@@ -92,11 +93,11 @@ private:
   vector<int> my_lines{vector<int>(6,0)};
   int calculate_utility();
 
-  void initialize();
 
 public:
   bool win, lose;
   // count lines
+  void initialize();
   void update();
   // get board from Agent::readState
   void set_board(std::vector<int> v);

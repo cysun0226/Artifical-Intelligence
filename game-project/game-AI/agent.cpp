@@ -5,8 +5,9 @@
 #include <climits>
 #include "agent.h"
 #include "debug.h"
+#include <sstream>
 
-#define MINIMAX_DEPTH 2
+#define MINIMAX_DEPTH 1
 
 Agent::Agent(int team_number):
   team_number(team_number),
@@ -15,14 +16,24 @@ Agent::Agent(int team_number):
   first_winner(-1),
   game_stop(false)
   {
-    this->state_file = "state_" + to_string(team_number) + ".txt";
-    this->move_file = "move_" + to_string(team_number) + ".txt";
+    stringstream ss;
+    ss << team_number;
+    string convert_str;
+    ss >>  convert_str;
+
+    this->state_file = "state_" + convert_str + ".txt";
+    this->move_file = "move_" + convert_str + ".txt";
+    // this->state_file = "state_" + to_string(team_number) + ".txt";
+    // this->move_file = "move_" + to_string(team_number) + ".txt";
   }
 
 void Agent::processStateInfo() {
   if(readState()) {
     chessboard.set_board(board);
+    cout << "update chessboard...\n" << endl;
+    cout << " - count connective lines..." << endl;
     chessboard.update();
+    cout << " - finish analyze lines.\n" << endl;
   }
 }
 
@@ -33,8 +44,14 @@ bool isEmpty(std::ifstream& pFile) {
 
 bool Agent::readState() {
   ifstream infile(state_file);
-	if (!infile.is_open()) return false;
-	if (isEmpty(infile)) return false;
+	if (!infile.is_open())
+    return false;
+  // cout << "file exist" << endl;
+  // waitKey();
+	if (isEmpty(infile))
+    return false;
+  // cout << "file not empty" << endl;
+  // waitKey();
 
 	int move;
 	infile >> move;
@@ -52,7 +69,10 @@ bool Agent::readState() {
     return false;
 
   // waitKey();
-  cout << "start reading new state..." << endl;
+  cout << "\nstart reading new state, move = " << move <<"..." << endl;
+  if (move == 1 || move == 2) {
+    chessboard.initialize();
+  }
   prev_move = move;
 
 	infile >> first_winner;
@@ -82,16 +102,18 @@ bool Agent::readState() {
 }
 
 int Agent::_getNextMove() {
-  int next_move = -1;
-  int max_utility = INT_MIN;
-  for (size_t i = 0; i < valid_pos.size(); i++) {
-    int new_utility = minimax(valid_pos[i], MINIMAX_DEPTH);
-    if ( new_utility > max_utility) {
-      max_utility = new_utility;
-      next_move = valid_pos[i];
-    }
-  }
-  return next_move;
+  return minimax(MINIMAX_DEPTH);
+  // int next_move = -1;
+  // int max_utility = INT_MIN;
+  // for (size_t i = 0; i < valid_pos.size(); i++) {
+  //   int new_utility = minimax(valid_pos[i], MINIMAX_DEPTH);
+  //   if ( new_utility > max_utility) {
+  //     max_utility = new_utility;
+  //     next_move = valid_pos[i];
+  //   }
+  // }
+  // return next_move;
+  // return valid_pos[0];
 }
 
 void Agent::nextMove() {
@@ -102,7 +124,7 @@ void Agent::nextMove() {
 void Agent::_writeMove(int pos) {
 	ofstream outfile(move_file);
 	outfile << cur_move << " " << pos;
-  cout << "move " << cur_move  << ", pos = " << pos << endl;
+  cout << " > move " << cur_move  << ", pos = " << pos << endl;
 	outfile.close();
 }
 
@@ -116,14 +138,12 @@ bool Agent::isGameStop() {
 }
 
 // LABEL minimax
-int Agent::minimax(int new_pos, int depth) {
+int Agent::minimax(int depth) {
   ActAndUtil result = _minimax_impl(chessboard,
-                                       depth,
-                                       INT_MIN,
-                                       INT_MAX,
-                                       //std::numeric_limits<float>::min(),
-                                       //std::numeric_limits<float>::max(),
-                                       ME);
+                                    depth,
+                                    INT_MIN+1,
+                                    INT_MAX,
+                                    ME);
 
   return result.action;
 }
@@ -142,41 +162,44 @@ ActAndUtil Agent::_minimax_impl(ChessBoard& s, int depth, float alpha, float bet
    *   and the heuristic board utility following this move
    */
 
-  cout << "start minimax" << endl;
-  waitKey();
-
   if (depth == 0 || s.win || s.lose) {
-    return ActAndUtil(s.get_utility(), -1);
+    return ActAndUtil(-1, color*s.get_utility());
   }
 
   // float best_util = std::numeric_limits<float>::min();
-  float best_util = INT_MIN;
+  int best_util = INT_MIN+1;
   int best_action = -1;
   int player = (color == 1)? ME : OPPONENT;
 
   // iterate through reasonable moves
   std::vector<int> reasonable_moves = s.get_valid_pos();
+  // printVector(reasonable_moves, "reasonable_moves");
+  // waitKey();
   for (int i = 0; i < reasonable_moves.size(); i++) {
-    s.put_one(i, player);
-    s.update_one(i);
+    // cout << "put_one" << endl;
+    s.put_one(reasonable_moves[i], player);
+    // cout << "update_one" << endl;
+    s.update();
 
-    float return_util = -1 * _minimax_impl(s, -depth, -beta, -alpha, -color).util;
+    int return_util = -1 * _minimax_impl(s, depth-1, -beta, -alpha, -color).util;
     if (return_util > best_util) {
       best_util = return_util;
-      best_action = i;
+      best_action = reasonable_moves[i];
     }
     alpha = return_util > alpha? return_util : alpha;
     if (alpha >= beta)
       break;
 
-    s.remove_one(i);
-    s.update_one(i);
+    // cout << "remove_one" << endl;
+    s.remove_one(reasonable_moves[i]);
+    // cout << "update_one" << endl;
+    s.update();
   }
 
-  return ActAndUtil(best_util, best_action);
+  return ActAndUtil(best_action, best_util);
 }
 
-ActAndUtil::ActAndUtil(float u, int a) : util(u), action(a) {}
+ActAndUtil::ActAndUtil(int act, int u) : util(u), action(act) {}
 
 // int minimax(int new_pos, int depth) {
 //   int best_utility;

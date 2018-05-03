@@ -1,5 +1,5 @@
 /* AI game project */
-// by cysun and Americano Ho
+// by cysun, Americano Ho and Kao Chu Ching
 
 #ifndef __AGENT_H__
 #define __AGENT_H__
@@ -17,9 +17,9 @@
 
 // Record the action done and the heuristic board utility following the action
 struct ActAndUtil {
-  float util;
   int action; // which position to put
-  ActAndUtil(float util, int action);
+  int util;
+  ActAndUtil(int a, int u);
 };
 
 // LABEL Class Agent
@@ -48,7 +48,7 @@ private:
 	// Get current board. 0: valid pos, 1: your pos, 2: opponent pos
 	// A list of int. e.g. [0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 2, 2, 0, 2...]
 	bool readState();
-  int minimax(int new_pos, int depth);
+  int minimax(int depth);
 
   // Internal implementation of negamax with alpha-beta
   ActAndUtil _minimax_impl(ChessBoard& s, int depth, float alpha, float beta, int color);
