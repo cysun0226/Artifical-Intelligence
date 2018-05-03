@@ -128,8 +128,11 @@ int Agent::_getNextMove() {
   //   printVector(chessboard.critical_moves, "critical_moves");
   //   return chessboard.critical_moves.front();
   // }
-  if (chessboard.critical_move != -1)
+  if (chessboard.critical_move != -1) {
+    cout << "move " << cur_move;
+    cout << " critical_pos = " << chessboard.critical_move << endl;
     return chessboard.critical_move;
+  }
 
   return minimax(MINIMAX_DEPTH);
 
