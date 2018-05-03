@@ -80,6 +80,8 @@ private:
   std::vector<int> board;
   Block block[217];
   int utility;
+  int last;
+  int second_last;
 
   vector<Line> line;
   vector<int> layer;
@@ -89,8 +91,9 @@ private:
   // utility
   // vector<int> opponent_lines(6,0);
   // vector<int> my_lines(6,0);
-  vector<int> opponent_lines{vector<int>(6,0)};
-  vector<int> my_lines{vector<int>(6,0)};
+  vector<int> opponent_lines;
+  vector<int> my_lines;
+
   int calculate_utility();
 
 
@@ -102,12 +105,20 @@ public:
   // get board from Agent::readState
   void set_board(std::vector<int> v);
   int get_utility(); // return utility
+  vector<int> critical_moves;
+  int critical_move;
+  // vector<int> reasonable_moves;
 
   void put_one(int new_pos, int player);
   void remove_one(int new_pos);
   void update_one(int new_pos);
 
+  Block get_block(int id);
   std::vector<int> get_valid_pos();
+  std::vector<int> get_critical_moves();
+  std::vector<int> get_reasonable_moves();
+  void find_critical();
+
 
 
   ChessBoard();

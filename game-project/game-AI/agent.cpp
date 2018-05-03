@@ -7,7 +7,7 @@
 #include "debug.h"
 #include <sstream>
 
-#define MINIMAX_DEPTH 1
+#define MINIMAX_DEPTH 5
 
 Agent::Agent(int team_number):
   team_number(team_number),
@@ -30,10 +30,7 @@ Agent::Agent(int team_number):
 void Agent::processStateInfo() {
   if(readState()) {
     chessboard.set_board(board);
-    cout << "update chessboard...\n" << endl;
-    cout << " - count connective lines..." << endl;
     chessboard.update();
-    cout << " - finish analyze lines.\n" << endl;
   }
 }
 
@@ -69,10 +66,15 @@ bool Agent::readState() {
     return false;
 
   // waitKey();
-  cout << "\nstart reading new state, move = " << move <<"..." << endl;
   if (move == 1 || move == 2) {
+    cout << "\n\n=== game start ===\n" << endl;
     chessboard.initialize();
   }
+
+  if (move == -100)
+    cout << "\n\n=== game finish ===\n" << endl;
+
+  cout << "\nstart reading new state, move = " << move <<"..." << endl;
   prev_move = move;
 
 	infile >> first_winner;
@@ -102,7 +104,37 @@ bool Agent::readState() {
 }
 
 int Agent::_getNextMove() {
+  if (cur_move < 4) {
+    if (board[108] == EMPTY)
+      return 108;
+    else {
+      std::vector<Block*> n = chessboard.get_block(108).neighbors;
+      for (int i = 0; i < n.size(); i++) {
+        if (n[i]->state == EMPTY) {
+          if (i == 0 || i == 2 || i == 4) {
+            if (n[i+1]->state == EMPTY)
+              return n[i]->id;
+          }
+          if (n[i-1]->state == EMPTY)
+            return n[i]->id;
+        }
+      }
+    }
+  }
+
+  // if (!chessboard.critical_moves.empty()) {
+  //   cout << "move " << cur_move;
+  //   cout << " - critical_pos[0] = " << chessboard.critical_moves.front() << endl;
+  //   printVector(chessboard.critical_moves, "critical_moves");
+  //   return chessboard.critical_moves.front();
+  // }
+  if (chessboard.critical_move != -1)
+    return chessboard.critical_move;
+
   return minimax(MINIMAX_DEPTH);
+
+}
+
   // int next_move = -1;
   // int max_utility = INT_MIN;
   // for (size_t i = 0; i < valid_pos.size(); i++) {
@@ -114,7 +146,7 @@ int Agent::_getNextMove() {
   // }
   // return next_move;
   // return valid_pos[0];
-}
+
 
 void Agent::nextMove() {
   int pos = _getNextMove();
@@ -179,7 +211,7 @@ ActAndUtil Agent::_minimax_impl(ChessBoard& s, int depth, float alpha, float bet
     // cout << "put_one" << endl;
     s.put_one(reasonable_moves[i], player);
     // cout << "update_one" << endl;
-    s.update();
+    s.update_one(reasonable_moves[i]);
 
     int return_util = -1 * _minimax_impl(s, depth-1, -beta, -alpha, -color).util;
     if (return_util > best_util) {
@@ -193,39 +225,14 @@ ActAndUtil Agent::_minimax_impl(ChessBoard& s, int depth, float alpha, float bet
     // cout << "remove_one" << endl;
     s.remove_one(reasonable_moves[i]);
     // cout << "update_one" << endl;
-    s.update();
+    s.update_one(reasonable_moves[i]);
   }
 
+  if (best_action == -1) {
+    cout << "cur_move = " << cur_move << endl;
+    cout << "depth = " << cur_move << endl;
+  }
   return ActAndUtil(best_action, best_util);
 }
 
 ActAndUtil::ActAndUtil(int act, int u) : util(u), action(act) {}
-
-// int minimax(int new_pos, int depth) {
-//   int best_utility;
-//   chessboard.put_one(new_pos);
-//   chessboard.update();
-//   // child of current start_state
-//   std::vector<int> valid_pos = chessboard.get_valid_pos();
-//
-//   if (start_state is win or lose || depth == 0 ) {
-//     chessboard.remove_one(new_pos);
-//     return chessboard.get_utility();
-//   }
-//
-//   if (state == opponent) {
-//     best_utility = INT_MAX;
-//     for (int i = 0; i < valid_pos.size(); i++) {
-//       best_utility = min(best_utility, minimax(valid_pos[i], depth-1));
-//     }
-//   }
-//   else { // our turn
-//     best_utility = INT_MIN;
-//     for (int i = 0; i < valid_pos.size(); i++) {
-//       best_utility = max(best_utility, minimax(valid_pos[i], depth-1));
-//     }
-//   }
-//
-//   chessboard.remove_one(new_pos);
-//   return best_utility;
-// }

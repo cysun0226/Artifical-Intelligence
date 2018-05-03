@@ -61,6 +61,14 @@ std::vector<int> ChessBoard::get_valid_pos() {
   return valid_pos;
 }
 
+std::vector<int> ChessBoard::get_critical_moves() {
+  return critical_moves;
+}
+
+Block ChessBoard::get_block(int id) {
+  return block[id];
+}
+
 // LABEL CB::init
 void ChessBoard::initialize()
 {
@@ -68,6 +76,11 @@ void ChessBoard::initialize()
 
   win = false;
   lose = false;
+  last = -1;
+  second_last = -1;
+  // opponent_lines = vector<int>(6,0);
+  // my_lines = vector<int>(6,0);
+
   for (size_t i = 0; i < 217; i++) {
     block[i].state = EMPTY;
     block[i].id = i;
@@ -153,6 +166,13 @@ void ChessBoard::update()
   valid_pos.clear();
   my_pos.clear();
   opponent_pos.clear();
+  line.clear();
+  critical_moves.clear();
+  win = false;
+  lose = false;
+  critical_move = -1;
+
+
 
   for (int i = 0; i < 217; i++) {
     block[i].state = board[i];
@@ -165,6 +185,8 @@ void ChessBoard::update()
   }
 
   // printVector(valid_pos, "valid_pos");
+  // cout << "valid_pos = " << valid_pos.size() << endl;
+  // waitKey();
 
   // count connective lines
   // cout << " - count connective lines..." << endl;
@@ -175,6 +197,7 @@ void ChessBoard::update()
     for (int r = 0; r < 17; r++) {
       int length = 1, prev_state = -1, prev_length = 1;
       int head, tail, status;
+      int prev_line_row = -1, prev_line_tail = -1;
       for (int c = 0; c < layer[r]; c++) {
         int cur_state = block[(*axiz[a])[Coordinate(r, c)]].state;
         if ( cur_state != EMPTY && cur_state == prev_state)
@@ -189,6 +212,7 @@ void ChessBoard::update()
           int end = (c == layer[r]-1 && length>1)?  c+1 : c;
           int line_length = (c == layer[r]-1 && length>1)?  length : prev_length;
           int line_state = (c == layer[r]-1 && length>1)?  cur_state : prev_state;
+          int head_line_pos = (*axiz[a])[Coordinate(r, start-1)];
 
           for (int i = start; i < end; i++)
             block_list.push_back(&block[(*axiz[a])[Coordinate(r, i)]]);
@@ -215,6 +239,57 @@ void ChessBoard::update()
           else if (line_length >= 5 && line_state == OPPONENT)
             lose = true;
 
+          // critical_moves
+          int tail_line_pos = (*axiz[a])[Coordinate(r, c)];
+          int c_move = (head == OPEN)? head_line_pos : tail_line_pos;
+
+          if (line_length == 3 && status == OPEN) {
+            put_one(head_line_pos, ME);
+            update_one(head_line_pos);
+            int h_util = calculate_utility();
+            remove_one(head_line_pos);
+            update_one(tail_line_pos);
+            put_one(tail_line_pos, ME);
+            update_one(tail_line_pos);
+            int t_util = calculate_utility();
+            remove_one(tail_line_pos);
+            update_one(tail_line_pos);
+
+            c_move = (h_util > t_util)? head_line_pos : tail_line_pos;
+
+            critical_moves.push_back(c_move);
+            critical_move = c_move;
+          }
+
+          if (prev_line_row == r && prev_line_tail == start-2 && head==OPEN) {
+            // cout << "-- inside --" << endl;
+            // cout << "r = " << prev_line_row << endl;
+            // cout << "prev_line_tail = " << prev_line_tail << endl;
+            // cout << "start = " << "start" << endl;
+            critical_moves.push_back(head_line_pos);
+            critical_move = head_line_pos;
+          }
+
+          if (start>1 && line_length>2 &&
+              block[(*axiz[a])[Coordinate(r, start-2)]].state == line_state &&
+              head==OPEN ) {
+            critical_move = head_line_pos;
+          }
+
+          if (line_length == 4 && line_state == OPPONENT && status == HALF_OPEN) {
+            cout << "Oops!" << endl;
+            critical_move = c_move;
+            critical_moves.push_back(c_move);
+          }
+
+          if (line_length == 4 && line_state == ME && status != BLOCK) {
+            critical_moves.push_back(c_move);
+            critical_move = c_move;
+          }
+
+          prev_line_row = r;
+          prev_line_tail = c-1;
+
           // test
           // cout << " == line == " << endl;
           // cout << line.back() << endl;
@@ -223,95 +298,6 @@ void ChessBoard::update()
           // cout << "head = " << s;
           // s = (tail == BLOCK)? "BLOCK" : "OPEN";
           // cout << ", tail = " << s << endl << endl;
-
-
-          /* utility */
-          //newly added-----------
-          if(line_state == ME && win == true)
-          {
-          		my_lines[6]++;
-          }
-          else if(line_state == OPPONENT && win == true)
-          {
-          		opponent_lines[6]++;
-          }
-          else if((line_length == 1) && (head == OPEN || tail == OPEN))
-          {
-          		if(line_state == ME)
-          		{
-          			my_lines[2]++; //150
-          		}
-          		else
-          		{
-          			opponent_lines[2]++; //-1000
-          		}
-          }
-          else if((line_length == 2) && (head == OPEN || tail == OPEN))
-          {
-
-          		if(line_state == ME)
-          		{
-          			if(head == OPEN && tail == OPEN) //live-2
-          			{
-          			    my_lines[3]++; //600
-          			}
-          			else //dead-2
-          			{
-          				my_lines[1]++; //120
-          			}
-          		}
-          		else
-          		{
-					if(head == OPEN && tail == OPEN) //live-2
-          			{
-          			    opponent_lines[4]++; //-5000
-          			}
-          			else //dead-2
-          			{
-          				opponent_lines[1]++; // -800
-          			}
-          		}
-          }
-           else if((line_length == 3) && (head == OPEN || tail == OPEN))
-          {
-
-          		if(line_state == ME)
-          		{
-          			if(head == OPEN && tail == OPEN) //live-3
-          			{
-          			    my_lines[4]++; //3500
-          			}
-          			else //dead-3
-          			{
-          				my_lines[2]++; //600
-          			}
-          		}
-          		else
-          		{
-					      if(head == OPEN && tail == OPEN) //live-3
-          			{
-          			    opponent_lines[4]++; //-5000
-          			}
-          			else //dead-3
-          			{
-          				opponent_lines[3]++; //-2000
-          			}
-          		}
-          }
-          else if((line_length == 4) && (head == OPEN || tail == OPEN))
-          {
-          		if(line_state == ME)
-          		{
-					       my_lines[5]++;
-          		}
-          		else
-          		{
-					       opponent_lines[5]++;
-          		}
-          }
-
-          // utility
-
         }
         prev_state = cur_state;
         prev_length = length;
@@ -414,6 +400,9 @@ void ChessBoard::update_one(int new_pos) {
         // s = (tail == BLOCK)? "BLOCK" : "OPEN";
         // cout << ", tail = " << s << endl << endl;
       }
+
+      prev_state = cur_state;
+      prev_length = length;
     }
   }
 }
@@ -421,17 +410,128 @@ void ChessBoard::update_one(int new_pos) {
 // LABEL CB::utility
 int ChessBoard::calculate_utility()
 {
+  /* utility */
+  opponent_lines.clear();
+  my_lines.clear();
+  for (size_t i = 0; i < 7; i++) {
+    opponent_lines.push_back(0);
+    my_lines.push_back(0);
+  }
+
+  // my_lines = vector<int>(6,0);
+  bool line_win = false;
+  bool line_lose = false;
+
+  for (int i = 0; i < line.size(); i++) {
+    int line_state = line[i].state;
+    int line_length = line[i].length;
+    int line_status = line[i].status;
+
+    if(line_length >= 5 && line_state == ME)
+      line_win = true;
+    else if (line_length >= 5 && line_state == OPPONENT)
+      line_lose = true;
+
+    if(line_state == ME && line_win == true)
+    {
+        my_lines[6]++;
+    }
+    if(line_state == OPPONENT && line_lose == true)
+    {
+        opponent_lines[6]++;
+    }
+    if((line_length == 1) && (line_status == OPEN))
+    {
+        if(line_state == ME)
+        {
+          my_lines[2]++; //150
+        }
+        else
+        {
+          opponent_lines[2]++; //-1000
+        }
+    }
+    if((line_length == 2) && (line_status != BLOCK))
+    {
+
+        if(line_state == ME)
+        {
+          if(line_status == OPEN) //live-2
+          {
+              my_lines[3]++; //600
+          }
+          else //dead-2
+          {
+            my_lines[1]++; //120
+          }
+        }
+        else
+        {
+          if(line_status == OPEN) //live-2
+          {
+              opponent_lines[4]++; //-5000
+          }
+          else //dead-2
+          {
+            opponent_lines[1]++; // -800
+          }
+        }
+    }
+    if((line_length == 3) && (line_status != BLOCK))
+    {
+
+        if(line_state == ME)
+        {
+          if(line_status == OPEN) //live-3
+          {
+              my_lines[4]++; //3500
+          }
+          else //dead-3
+          {
+            my_lines[2]++; //600
+          }
+        }
+        else
+        {
+          if(line_status == OPEN) //live-3
+          {
+              opponent_lines[4]++; //-5000
+          }
+          else //dead-3
+          {
+            opponent_lines[3]++; //-2000
+          }
+        }
+    }
+    if((line_length == 4) && (line_status != BLOCK))
+    {
+        if(line_state == ME)
+        {
+           my_lines[5]++;
+        }
+        else
+        {
+           opponent_lines[5]++;
+        }
+    }
+  }
+
+  // sum up utility
+  // printVector(my_lines, "my_lines");
+  // printVector(my_lines, "opponent_lines");
+
+
   int new_utility = 0;
   new_utility += my_lines[1];
   new_utility -= opponent_lines[1]*5;
   int temp = 1;
   if( my_lines[6] > 0 ) return INT_MAX; //WIN
   if( opponent_lines[6] > 0) return INT_MIN+1; // opponent WIN
-  for(int i = 2; i < 6; i++ )
+  for(int i = 2; i < 6; i++)
   {
   		temp *= 100;
   		new_utility+=my_lines[i] * temp;
-  		new_utility-=opponent_lines[i] * temp * 10;
+  		new_utility-=opponent_lines[i] * temp;
   }
 
 
@@ -440,4 +540,29 @@ int ChessBoard::calculate_utility()
 
 int ChessBoard::get_utility() {
   return calculate_utility();
+}
+
+vector<int> ChessBoard::get_reasonable_moves() {
+  vector<int> reasonables;
+
+  if (valid_pos.size() <= 215) {
+    if (board[108] == EMPTY) {
+      reasonables.push_back(108);
+      return reasonables;
+    }
+
+  }
+  // else {
+  //   // extend my connective line
+  //   if (second_last != -1) {
+  //     add_neighbor(reasonables, second_last);
+  //   }
+  //
+  //   // block opponent's line
+  //   if (last != -1) {
+  //     add_neighbor(reasonables, last);
+  //   }
+  // }
+
+  return reasonables;
 }
