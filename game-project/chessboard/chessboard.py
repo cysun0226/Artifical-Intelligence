@@ -93,10 +93,10 @@ for chess in chessboard:
     # print("draw " + str(pos))
     x.append(chessboard_mapping(pos)[0])
     y.append(chessboard_mapping(pos)[1])
-    if chess == 1:
-        color.append('white')
-    else:
+    if chess%2 == 1:
         color.append('black')
+    else:
+        color.append('white')
 
 
 
