@@ -56,7 +56,7 @@ def split_data(data_set, feature, threshold):
 
 def get_feature_boundary(data_set, feature):
     # sorting
-    sorted_data = sorted(data_set, key=operator.attrgetter(feature))
+    sorted_data = sorted(data_set, key=operator.itemgetter(feature))
     # find boundary (class change)
     boundary = []
     prev_class = sorted_data[0].class_name
