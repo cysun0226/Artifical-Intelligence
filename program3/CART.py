@@ -4,7 +4,7 @@ import math
 import operator
 
 data_file_name = str(sys.argv[1])
-feature_list = { 'Iris': [ 's_l', 's_w', 'p_l', 'p_w' ] }
+feature_list = { 'Iris': [ 'p_l', 'p_w', 's_l', 's_w' ] }
 LEFT = 0
 RIGHT = 1
 
@@ -30,10 +30,10 @@ class Iris(object):
         self.features = features
     def __str__(self):
         out = 'id: {:<3} | '.format(self.id)
-        out = out + 's_l = ' + str(self.sepal_l) + ', '
-        out = out + 's_w = ' + str(self.sepal_w) + ', '
-        out = out + 'p_l = ' + str(self.petal_l) + ', '
-        out = out + 'p_w = ' + str(self.petal_w) + ' | '
+        out = out + 's_l = ' + str(self.s_l) + ', '
+        out = out + 's_w = ' + str(self.s_w) + ', '
+        out = out + 'p_l = ' + str(self.p_l) + ', '
+        out = out + 'p_w = ' + str(self.p_w) + ' | '
         out = out + 'class: ' + self.class_name
         return out
 
@@ -76,7 +76,7 @@ def gini(data_set):
     impurity = 0.0
     for class_name in num_of_each_class:
         count = num_of_each_class[class_name]
-        impurity += count/total * count/total
+        impurity += float(count)/total * float(count)/total
     return 1 - impurity
 
 def split_data(data_set, feature, threshold):
@@ -97,9 +97,9 @@ def get_feature_values(data_set, feature):
 
 def bulid_decision_tree(data_set, evaluation=gini):
     # wait_key()
-    # print('\n --- new node ---\n')
-    # print('data_set = ' + str(len(data_set)))
-    # print_list(data_set)
+    print('\n --- new node ---\n')
+    print('data_set = ' + str(len(data_set)))
+    print_list(data_set)
 
     # current gini
     cur_gini = evaluation(data_set)
@@ -107,6 +107,7 @@ def bulid_decision_tree(data_set, evaluation=gini):
     best_feature = None
     best_threshold = None
     best_split = None
+    best_diff = 10000
     total = len(data_set)
 
     # choose threshold
@@ -117,19 +118,25 @@ def bulid_decision_tree(data_set, evaluation=gini):
             left_list, right_list = split_data(data_set, feature, feature_value)
             p = len(left_list)/total # probability
             gain = cur_gini - (p*evaluation(left_list) + (1-p)*evaluation(right_list))
+            diff = abs(len(left_list) - len(right_list))
+            # if ((gain > best_gain) or (gain >= best_gain and diff < best_diff)):
+            print('new_gain = ' + str(gain))
             if (gain > best_gain):
                 best_gain = gain
                 best_feature = feature
                 best_threshold = feature_value
+                best_diff = diff
                 best_split = (left_list, right_list)
 
-    # print('best_gain = ' + str(best_gain))
-    # print('best_feature = ' + str(best_feature))
-    # print('best_threshold = ' + str(best_threshold))
-    # print('left_list = ' + str(len(left_list)))
-    # print_list(left_list)
-    # print('right_list = ' + str(len(right_list)))
-    # print_list(right_list)
+    print('cur_gini = ' + str(cur_gini))
+    print('best_gain = ' + str(best_gain))
+    print('best_feature = ' + str(best_feature))
+    print('best_threshold = ' + str(best_threshold))
+    if best_split != None:
+        print('left_list = ' + str(len(best_split[LEFT])))
+        print_list(best_split[LEFT])
+        print('right_list = ' + str(len(best_split[RIGHT])))
+        print_list(best_split[RIGHT])
 
     # gini gain (if gain = 0, stop)
     # keep spliting
@@ -235,6 +242,7 @@ for x in range(time):
     accuracy = correct / len(test_set)
     acc_avg_sum += accuracy
     print('\naccuracy = ' + str(accuracy))
+    print(count_class_num(test_set))
 print('')
 
 # avg test result
