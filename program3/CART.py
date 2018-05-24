@@ -40,14 +40,23 @@ class Node(object):
     def __init__(self, left=None, right=None, feature=None, threshold=None):
         if left != None:
             self.left = left
+        else:
+            self.left = None
+
         if right != None:
             self.right = right
+        else:
+            self.right = None
         # if data != None:
         #     self.data = data
         if feature != None:
             self.feature = feature
+        else:
+            self.feature = None
         if threshold != None:
             self.threshold = threshold
+        else:
+            self.threshold = None
         # if gini_idx != None:
         #     self.gini_idx = gini_idx
 
@@ -106,7 +115,7 @@ def bulid_decision_tree(data_set, evaluation=gini):
             left_list, right_list = split_data(data_set, feature, feature_value)
             p = len(left_list)/total # probability
             new_gain = cur_gain - p*evaluation(left_list) - (1-p)*evaluation(right_list)
-            if (new_gain > best_gain) and (len(left_list) != total) and (len(right_list) != total):
+            if (new_gain > best_gain):
                 best_gain = new_gain
                 best_feature = feature
                 best_threshold = feature_value
@@ -134,14 +143,14 @@ def bulid_decision_tree(data_set, evaluation=gini):
 def classify(data, decision_tree):
     # reach leaf node
     if (decision_tree.left == None and decision_tree.right == None):
-        return decision_tree.class_name
+        return decision_tree.feature
     # keep traversing the tree
-    if data.features[decision_tree.feature] < threshold:
-        class_name = classify(data, decision_tree.left)
+    if data.features[decision_tree.feature] < decision_tree.threshold:
+        data_class = classify(data, decision_tree.left)
     else:
-        class_name = classify(data, decision_tree.right)
+        data_class = classify(data, decision_tree.right)
 
-    return class_name
+    return data_class
 
 
 
@@ -153,6 +162,7 @@ def classify(data, decision_tree):
 # main
 iris_data = []
 test_data = []
+acc_avg_sum = 0
 
 with open(data_file_name) as data_file:
     data = data_file.read().splitlines()
@@ -166,10 +176,46 @@ for line in data:
             line[4] = line[4][:-1]
         iris_data.append(Iris(idx, float(line[0]), float(line[1]), float(line[2]), float(line[3]), line[4], f))
     idx += 1
+total = len(iris_data)
 
-# shuffle data
-shuffle(iris_data)
-train_set = iris_data[0:int(math.floor(0.7*len(iris_data)))]
-test_set = iris_data[int(math.floor(0.7*len(iris_data))):len(iris_data)]
+# print result header
+print('\n\n===== ' + data_file_name + ' data set =====\n')
+print('train_set = %d' % int(math.floor(0.7*len(iris_data))))
+print('test_set = %d' % (len(iris_data) - math.floor(0.7*len(iris_data))))
 
-bulid_decision_tree(train_set)
+time = int(input("\ntest time: "))
+print_result = raw_input("print detailed results?(y/n): ")
+
+for x in range(time):
+    print('\n\n===== test %d =====' % (x+1))
+    # shuffle and pick the training set
+    shuffle(iris_data)
+    train_set = iris_data[0:int(math.floor(0.7*total))]
+    test_set = iris_data[int(math.floor(0.7*total)):total]
+
+    # build decision tree
+    decision_tree = bulid_decision_tree(train_set)
+
+    # test
+    correct = 0.0
+
+    for data in test_set:
+        predict = classify(data, decision_tree)
+        if predict == data.class_name:
+            correct += 1
+            if print_result == 'y':
+                print('[correct] data = {0:15}'.format(data.class_name) + ' | Predict = ' + predict)
+        else:
+            if print_result == 'y':
+                print('[ wrong ] data = {0:15}'.format(data.class_name) + ' | Predict = ' + predict)
+
+    accuracy = correct / len(test_set)
+    acc_avg_sum += accuracy
+    print('\naccuracy = ' + str(accuracy))
+print('')
+
+# avg test result
+print('\n\n===== test results =====')
+print('\ntest = %d' % time)
+print('\navg accuracy = %f' % (acc_avg_sum / time))
+print('')
