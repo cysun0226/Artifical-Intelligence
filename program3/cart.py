@@ -3,7 +3,12 @@ import sys
 data_file_name = str(sys.argv[1])
 feature_list = { 'Iris': [ 's_l', 's_w', 'p_l', 'p_w' ] }
 
+# for debug
+def wait_key():
+    input("Press Enter to continue...")
+
 # struct
+# LABEL Iris
 class Iris(object):
     def __init__(self, id=None, sepal_l=None, sepal_w=None, petal_l=None, petal_w=None, class_name=None, features=None):
         self.id = id
@@ -23,19 +28,19 @@ class Iris(object):
         return out
 
 class Node(object):
-    def __init__(self, left_child=None, right_child=None, data = None, feature=None, threshold=None, gini_idx=None):
+    def __init__(self, left_child=None, right_child=None, feature=None, threshold=None):
         if left_child != None:
             self.left_child = left_child
         if right_child != None:
             self.right_child = right_child
-        if data != None:
-            self.data = data
+        # if data != None:
+        #     self.data = data
         if feature != None:
             self.feature = feature
         if threshold != None:
             self.threshold = threshold
-        if gini_idx != None:
-            self.gini_idx = gini_idx
+        # if gini_idx != None:
+        #     self.gini_idx = gini_idx
 
 def count_class_num(data_set):
     class_list = {}
@@ -46,11 +51,12 @@ def count_class_num(data_set):
             class_list[data.class_name] += 1
     return class_list
 
-def calculate_gini(data_set):
+def gini(data_set):
     total = len(data_set)
     num_of_each_class = count_class_num(data_set)
     impurity = 0.0
-    for count in num_of_each_class:
+    for class_name in num_of_each_class:
+        count = num_of_each_class[class_name]
         impurity += count/total * count/total
     return 1 - impurity
 
@@ -69,6 +75,39 @@ def get_feature_values(data_set, feature):
     for data in data_set:
         feature_values.append(data.features[feature])
     return feature_values
+
+def bulid_decision_tree(data_set, evaluation=gini):
+    # current gini
+    cur_gain = evaluation(data_set)
+    best_gain = 0.0
+    best_feature = None
+    best_threshold = None
+    best_split = None
+    total = len(data_set)
+
+    # choose threshold
+    for feature in feature_list['Iris']:
+        feature_values = get_feature_values(data_set, feature)
+        for feature_value in feature_values:
+            left_list, right_list = split_data(data_set, feature, feature_value)
+            p = len(left_list)/total # probability
+            new_gain = cur_gain - p*evaluation(left_list) - (1-p)*evaluation(right_list)
+            if new_gain > best_gain:
+                best_gain = new_gain
+                best_feature = feature
+                best_threshold = feature
+                best_split = (left_list, right_list)
+
+    # gini gain (if gain = 0, stop)
+    # keep spliting
+    if best_gain > 0:
+        left_child = bulid_decision_tree(left_list)
+        right_child = bulid_decision_tree(right_list)
+        return Node(left_child, right_child, best_feature, best_feature)
+    # reach leaf node
+    else:
+        return Node(left_child=None, right_child=None, feature=data_set[0].class_name)
+
 
 iris_data = []
 
@@ -89,4 +128,4 @@ for line in data:
         iris_data.append(Iris(idx, float(line[0]), float(line[1]), float(line[2]), float(line[3]), line[4], f))
     idx += 1
 
-print(count_class_num(iris_data))
+bulid_decision_tree(iris_data)
