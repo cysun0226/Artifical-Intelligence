@@ -2,10 +2,17 @@ import sys
 
 data_file_name = str(sys.argv[1])
 feature_list = { 'Iris': [ 's_l', 's_w', 'p_l', 'p_w' ] }
+LEFT = 0
+RIGHT = 1
 
 # for debug
 def wait_key():
-    input("Press Enter to continue...")
+    key = raw_input("Press Enter to continue...")
+    return
+
+def print_list(array):
+    for member in array:
+        print(member)
 
 # struct
 # LABEL Iris
@@ -24,7 +31,7 @@ class Iris(object):
         out = out + 's_w = ' + str(self.sepal_w) + ', '
         out = out + 'p_l = ' + str(self.petal_l) + ', '
         out = out + 'p_w = ' + str(self.petal_w) + ' | '
-        out = out + 'class: ' + self.iris_class
+        out = out + 'class: ' + self.class_name
         return out
 
 class Node(object):
@@ -77,6 +84,11 @@ def get_feature_values(data_set, feature):
     return feature_values
 
 def bulid_decision_tree(data_set, evaluation=gini):
+    # wait_key()
+    # print('\n --- new node ---\n')
+    # print('data_set = ' + str(len(data_set)))
+    # print_list(data_set)
+
     # current gini
     cur_gain = evaluation(data_set)
     best_gain = 0.0
@@ -92,21 +104,41 @@ def bulid_decision_tree(data_set, evaluation=gini):
             left_list, right_list = split_data(data_set, feature, feature_value)
             p = len(left_list)/total # probability
             new_gain = cur_gain - p*evaluation(left_list) - (1-p)*evaluation(right_list)
-            if new_gain > best_gain:
+            if (new_gain > best_gain) and (len(left_list) != total) and (len(right_list) != total):
                 best_gain = new_gain
                 best_feature = feature
-                best_threshold = feature
+                best_threshold = feature_value
                 best_split = (left_list, right_list)
+
+    # print('best_gain = ' + str(best_gain))
+    # print('best_feature = ' + str(best_feature))
+    # print('best_threshold = ' + str(best_threshold))
+    # print('left_list = ' + str(len(left_list)))
+    # print_list(left_list)
+    # print('right_list = ' + str(len(right_list)))
+    # print_list(right_list)
 
     # gini gain (if gain = 0, stop)
     # keep spliting
     if best_gain > 0:
-        left_child = bulid_decision_tree(left_list)
-        right_child = bulid_decision_tree(right_list)
+        left_child = bulid_decision_tree(best_split[LEFT])
+        right_child = bulid_decision_tree(best_split[RIGHT])
         return Node(left_child, right_child, best_feature, best_feature)
     # reach leaf node
     else:
         return Node(left_child=None, right_child=None, feature=data_set[0].class_name)
+
+
+def classify(data, decision_tree):
+    
+    return
+
+def walk(node):
+    answer = ask(node.question)
+    if answer == left:
+        walk(node.left_tree)
+    else:
+        walk(node.right_tree)
 
 
 iris_data = []
