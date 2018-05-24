@@ -44,8 +44,15 @@ class Iris(object):
 
 class Digit(object):
     def __init__(self, features=None, class_name=None):
-        self.class_name = class_name
         self.features = features
+        self.class_name = class_name
+    def __getitem__(self, feature):
+        return(self.features[feature])
+
+class Cross(object):
+    def __init__(self, features=None, class_name=None):
+        self.features = features
+        self.class_name = class_name
     def __getitem__(self, feature):
         return(self.features[feature])
 
@@ -113,9 +120,21 @@ data_feature_list['Digit'] = digit_feature
 # t = dTree.bulid_decision_tree(digit_data, data_feature_list['Digit'])
 # pred = dTree.classify(digit_data[9], t)
 
-# read
+# read cross200
+cross_data = []
+with open(data_file_3) as data_file:
+    data = data_file.read().splitlines()
+data.pop()
+for line in data:
+    line = line.split(' ')
+    line = [col for col in line if col != '']
+    features = { 'attr1': float(line[0]), 'attr2': float(line[1]) }
+    cross_data.append(Digit(features, line[2]))
 
-data_sets = [ (iris_data, 'Iris') , (digit_data, 'Digit') ]
+data_feature_list['Cross'] = [ 'attr1', 'attr2' ]
+
+
+data_sets = [ (iris_data, 'Iris'), (cross_data, 'Cross'), (digit_data, 'Digit') ]
 # data_file_names = [  ]
 DATA = 0
 NAME = 1
@@ -178,4 +197,3 @@ for data_set in data_sets:
     print('\n\n=== test results ===')
     print('\nCARF avg accuracy = %.3f' % (CART_acc_sum / time))
     print('random forest avg accuracy = %.3f' % (rf_acc_sum / time))
-    print('')
