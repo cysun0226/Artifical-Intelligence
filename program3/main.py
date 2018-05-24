@@ -5,12 +5,14 @@ import operator
 import CART.decision_tree as dTree
 import random_forest.random_forest as rf
 
-data_file_name = str(sys.argv[1])
+data_file_1 = str(sys.argv[1])
+data_file_2 = str(sys.argv[2])
 data_feature_list = { 'Iris': [ 'p_l', 'p_w', 's_l', 's_w' ] }
+train_set_ratio = 0.3
 
 # for debug
 def wait_key():
-    key = raw_input("Press Enter to continue...")
+    key = input("Press Enter to continue...")
     return
 
 def print_list(array):
@@ -67,7 +69,8 @@ test_data = []
 acc_avg_sum = 0
 rf_acc_avg_sum = 0
 
-with open(data_file_name) as data_file:
+# read data files
+with open(data_file_1) as data_file:
     data = data_file.read().splitlines()
 idx = 0
 for line in data:
@@ -81,14 +84,26 @@ for line in data:
     idx += 1
 total = len(iris_data)
 
+# with open(data_file_2) as data_file:
+#     data = data_file.read().splitlines()
+
 # print result header
-print('\n\n===== ' + data_file_name + ' data set =====\n')
-print('train_set = %d' % int(math.floor(0.7*len(iris_data))))
-print('test_set = %d' % (len(iris_data) - math.floor(0.7*len(iris_data))))
+print('\n\n===== ' + data_file_1 + ' data set =====\n')
+print('train_set = %d' % int(math.floor(train_set_ratio*len(iris_data))))
+print('test_set = %d' % (len(iris_data) - math.floor(train_set_ratio*len(iris_data))))
 
 time = int(input("\ntest time: "))
-print_result = raw_input("print detailed results?(y/n): ")
+print_result = input("print detailed results?(y/n): ")
+print('')
 
+# progress bar
+pbar_width = time
+# setup toolbar
+sys.stdout.write("> progress: [%s]" % (" " * pbar_width))
+sys.stdout.flush()
+sys.stdout.write("\b" * (pbar_width+1)) # return to start of line, after '['
+
+# pbar = tqdm(total=time, bar_format='{l_bar}{bar}', position=0)
 for x in range(time):
     if print_result=='y':
         print('\n\n== test %d ==' % (x+1))
@@ -114,11 +129,14 @@ for x in range(time):
     # test
     rf_acc_avg_sum += test_classifier(test_set, random_forest, rf.random_forest_classify, dTree.classify, log=print_result)
 
-print('')
+    # progress bar
+    sys.stdout.write("-")
+    sys.stdout.flush()
+    # pbar.update(1)
 
 # avg test result
-print('\n\n===== test results =====')
-print('\ntest = %d' % time)
+# pbar.close()
+print('\n\n=== test results ===')
 print('\nCARF avg accuracy = %.3f' % (acc_avg_sum / time))
-print('\nrandom forest avg accuracy = %.3f' % (rf_acc_avg_sum / time))
+print('random forest avg accuracy = %.3f' % (rf_acc_avg_sum / time))
 print('')
