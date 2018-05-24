@@ -1,5 +1,6 @@
 import sys
 from random import shuffle
+import math
 
 data_file_name = str(sys.argv[1])
 feature_list = { 'Iris': [ 's_l', 's_w', 'p_l', 'p_w' ] }
@@ -166,12 +167,9 @@ for line in data:
         iris_data.append(Iris(idx, float(line[0]), float(line[1]), float(line[2]), float(line[3]), line[4], f))
     idx += 1
 
-bulid_decision_tree(iris_data)
+# shuffle data
+shuffle(iris_data)
+train_set = iris_data[0:int(math.floor(0.7*len(iris_data)))]
+test_set = iris_data[int(math.floor(0.7*len(iris_data))):len(iris_data)]
 
-# lines = lines[1:len(lines)]
-# shuffle(lines)
-# train_set = lines[0:math.floor(0.7*len(lines))]
-# test_set = lines[math.floor(0.7*len(lines)):len(lines)]
-
-for value in variable:
-    pass
+bulid_decision_tree(train_set)
