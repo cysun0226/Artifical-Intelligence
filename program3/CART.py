@@ -1,6 +1,7 @@
 import sys
 from random import shuffle
 import math
+import operator
 
 data_file_name = str(sys.argv[1])
 feature_list = { 'Iris': [ 's_l', 's_w', 'p_l', 'p_w' ] }
@@ -19,12 +20,12 @@ def print_list(array):
 # struct
 # LABEL Iris
 class Iris(object):
-    def __init__(self, id=None, sepal_l=None, sepal_w=None, petal_l=None, petal_w=None, class_name=None, features=None):
+    def __init__(self, id=None, s_l=None, s_w=None, p_l=None, p_w=None, class_name=None, features=None):
         self.id = id
-        self.sepal_l = sepal_l
-        self.sepal_w = sepal_w
-        self.petal_l = petal_l
-        self.petal_w = petal_w
+        self.s_l = s_l
+        self.s_w = s_w
+        self.p_l = p_l
+        self.p_w = p_w
         self.class_name = class_name
         self.features = features
     def __str__(self):
@@ -101,7 +102,7 @@ def bulid_decision_tree(data_set, evaluation=gini):
     # print_list(data_set)
 
     # current gini
-    cur_gain = evaluation(data_set)
+    cur_gini = evaluation(data_set)
     best_gain = 0.0
     best_feature = None
     best_threshold = None
@@ -110,13 +111,14 @@ def bulid_decision_tree(data_set, evaluation=gini):
 
     # choose threshold
     for feature in feature_list['Iris']:
-        feature_values = get_feature_values(data_set, feature)
-        for feature_value in feature_values:
+        # handle the continuous features
+        feature_boundary = get_feature_boundary(data_set, feature)
+        for feature_value in feature_boundary:
             left_list, right_list = split_data(data_set, feature, feature_value)
             p = len(left_list)/total # probability
-            new_gain = cur_gain - p*evaluation(left_list) - (1-p)*evaluation(right_list)
-            if (new_gain > best_gain):
-                best_gain = new_gain
+            gain = cur_gini - (p*evaluation(left_list) + (1-p)*evaluation(right_list))
+            if (gain > best_gain):
+                best_gain = gain
                 best_feature = feature
                 best_threshold = feature_value
                 best_split = (left_list, right_list)
@@ -134,7 +136,7 @@ def bulid_decision_tree(data_set, evaluation=gini):
     if best_gain > 0:
         left_child = bulid_decision_tree(best_split[LEFT])
         right_child = bulid_decision_tree(best_split[RIGHT])
-        return Node(left_child, right_child, best_feature, best_feature)
+        return Node(left_child, right_child, best_feature, best_threshold)
     # reach leaf node
     else:
         return Node(left=None, right=None, feature=data_set[0].class_name)
@@ -153,11 +155,28 @@ def classify(data, decision_tree):
     return data_class
 
 
+def get_feature_boundary(data_set, feature):
+    # sorting
+    sorted_data = sorted(data_set, key=operator.attrgetter(feature))
+    # find boundary (class change)
+    boundary = []
+    prev_class = sorted_data[0].class_name
+    prev_feature_value = None
+    for data in sorted_data:
+        cur_feature_value = data.features[feature]
+        if data.class_name != prev_class and (cur_feature_value not in boundary):
+            prev_class = data.class_name
+            boundary.append((cur_feature_value+prev_feature_value)/2)
+        prev_feature_value = data.features[feature]
+    return boundary
 
 
-# data_file = open(data_file_name)
-# for line in data_file:
-     # line = line.split(',')
+# def find_feature_boundary(feature_values):
+
+    # pick up boundary
+
+
+
 
 # main
 iris_data = []
@@ -192,6 +211,10 @@ for x in range(time):
     shuffle(iris_data)
     train_set = iris_data[0:int(math.floor(0.7*total))]
     test_set = iris_data[int(math.floor(0.7*total)):total]
+
+    # handle the continuous features
+    # boundary = get_feature_boundary(train_set)
+    # print(boundary['p_w'])
 
     # build decision tree
     decision_tree = bulid_decision_tree(train_set)
