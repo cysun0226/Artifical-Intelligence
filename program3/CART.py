@@ -1,4 +1,5 @@
 import sys
+from random import shuffle
 
 data_file_name = str(sys.argv[1])
 feature_list = { 'Iris': [ 's_l', 's_w', 'p_l', 'p_w' ] }
@@ -35,11 +36,11 @@ class Iris(object):
         return out
 
 class Node(object):
-    def __init__(self, left_child=None, right_child=None, feature=None, threshold=None):
-        if left_child != None:
-            self.left_child = left_child
-        if right_child != None:
-            self.right_child = right_child
+    def __init__(self, left=None, right=None, feature=None, threshold=None):
+        if left != None:
+            self.left = left
+        if right != None:
+            self.right = right
         # if data != None:
         #     self.data = data
         if feature != None:
@@ -126,26 +127,31 @@ def bulid_decision_tree(data_set, evaluation=gini):
         return Node(left_child, right_child, best_feature, best_feature)
     # reach leaf node
     else:
-        return Node(left_child=None, right_child=None, feature=data_set[0].class_name)
+        return Node(left=None, right=None, feature=data_set[0].class_name)
 
 
 def classify(data, decision_tree):
-    
-    return
-
-def walk(node):
-    answer = ask(node.question)
-    if answer == left:
-        walk(node.left_tree)
+    # reach leaf node
+    if (decision_tree.left == None and decision_tree.right == None):
+        return decision_tree.class_name
+    # keep traversing the tree
+    if data.features[decision_tree.feature] < threshold:
+        class_name = classify(data, decision_tree.left)
     else:
-        walk(node.right_tree)
+        class_name = classify(data, decision_tree.right)
+
+    return class_name
 
 
-iris_data = []
+
 
 # data_file = open(data_file_name)
 # for line in data_file:
      # line = line.split(',')
+
+# main
+iris_data = []
+test_data = []
 
 with open(data_file_name) as data_file:
     data = data_file.read().splitlines()
@@ -161,3 +167,11 @@ for line in data:
     idx += 1
 
 bulid_decision_tree(iris_data)
+
+# lines = lines[1:len(lines)]
+# shuffle(lines)
+# train_set = lines[0:math.floor(0.7*len(lines))]
+# test_set = lines[math.floor(0.7*len(lines)):len(lines)]
+
+for value in variable:
+    pass
