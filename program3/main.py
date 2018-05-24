@@ -7,8 +7,9 @@ import random_forest.random_forest as rf
 
 data_file_1 = str(sys.argv[1])
 data_file_2 = str(sys.argv[2])
+data_file_3 = str(sys.argv[3])
 data_feature_list = { 'Iris': [ 'p_l', 'p_w', 's_l', 's_w' ] }
-train_set_ratio = 0.3
+train_set_ratio = 0.7
 
 # for debug
 def wait_key():
@@ -38,6 +39,15 @@ class Iris(object):
         out = out + 'p_w = ' + str(self.p_w) + ' | '
         out = out + 'class: ' + self.class_name
         return out
+    def __getitem__(self, feature):
+        return(self.features[feature])
+
+class Digit(object):
+    def __init__(self, features=None, class_name=None):
+        self.class_name = class_name
+        self.features = features
+    def __getitem__(self, feature):
+        return(self.features[feature])
 
 # testing
 def test_classifier(test_set, decision_tree, classify_function, forest_classify=None, log='n', classifier_name='result'):
@@ -66,10 +76,9 @@ def test_classifier(test_set, decision_tree, classify_function, forest_classify=
 # main
 iris_data = []
 test_data = []
-acc_avg_sum = 0
-rf_acc_avg_sum = 0
 
 # read data files
+# read Iris
 with open(data_file_1) as data_file:
     data = data_file.read().splitlines()
 idx = 0
@@ -82,61 +91,91 @@ for line in data:
             line[4] = line[4][:-1]
         iris_data.append(Iris(idx, float(line[0]), float(line[1]), float(line[2]), float(line[3]), line[4], f))
     idx += 1
-total = len(iris_data)
 
-# with open(data_file_2) as data_file:
-#     data = data_file.read().splitlines()
+# read digit
+digit_data = []
+with open(data_file_2) as data_file:
+    data = data_file.read().splitlines()
+data.pop()
+for line in data:
+    line = line.split(',')
+    features = {}
+    for i in range(64):
+        features[i] = int(line[i])
+    class_name = line[64]
+    digit_data.append(Digit(features, class_name))
 
-# print result header
-print('\n\n===== ' + data_file_1 + ' data set =====\n')
-print('train_set = %d' % int(math.floor(train_set_ratio*len(iris_data))))
-print('test_set = %d' % (len(iris_data) - math.floor(train_set_ratio*len(iris_data))))
+digit_feature = []
+for i in range(64):
+    digit_feature.append(i)
+data_feature_list['Digit'] = digit_feature
 
-time = int(input("\ntest time: "))
-print_result = input("print detailed results?(y/n): ")
-print('')
+# t = dTree.bulid_decision_tree(digit_data, data_feature_list['Digit'])
+# pred = dTree.classify(digit_data[9], t)
 
-# progress bar
-pbar_width = time
-# setup toolbar
-sys.stdout.write("> progress: [%s]" % (" " * pbar_width))
-sys.stdout.flush()
-sys.stdout.write("\b" * (pbar_width+1)) # return to start of line, after '['
+# read
 
-# pbar = tqdm(total=time, bar_format='{l_bar}{bar}', position=0)
-for x in range(time):
-    if print_result=='y':
-        print('\n\n== test %d ==' % (x+1))
-    # shuffle and pick the training set
-    shuffle(iris_data)
-    train_set = iris_data[0:int(math.floor(0.7*total))]
-    test_set = iris_data[int(math.floor(0.7*total)):total]
+data_sets = [ (iris_data, 'Iris') , (digit_data, 'Digit') ]
+# data_file_names = [  ]
+DATA = 0
+NAME = 1
 
-    # build decision tree
-    decision_tree = dTree.bulid_decision_tree(train_set, data_feature_list['Iris'])
+# testing each data_set
+for data_set in data_sets:
+    # print result header
+    total = len(data_set[DATA])
+    print('\n\n===== ' + data_set[NAME] + ' dataset =====\n')
+    print('train_set = %d' % int(math.floor(train_set_ratio*total)))
+    print('test_set = %d' % (total - math.floor(train_set_ratio*total)))
 
-    # test
-    acc_avg_sum += test_classifier(test_set, decision_tree, dTree.classify, log=print_result)
-
-    # bulid random forest
-    random_forest = rf.build_random_forest(
-        train_set,
-        data_feature_list['Iris'],
-        dTree.bulid_decision_tree,
-        tree_num=30
-        )
-
-    # test
-    rf_acc_avg_sum += test_classifier(test_set, random_forest, rf.random_forest_classify, dTree.classify, log=print_result)
+    time = int(input("\ntest time: "))
+    print_result = input("print detailed results?(y/n): ")
+    print('')
 
     # progress bar
-    sys.stdout.write("-")
+    pbar_width = time
+    # setup toolbar
+    sys.stdout.write("> progress: [%s]" % (" " * pbar_width))
     sys.stdout.flush()
-    # pbar.update(1)
+    sys.stdout.write("\b" * (pbar_width+1)) # return to start of line, after '['
 
-# avg test result
-# pbar.close()
-print('\n\n=== test results ===')
-print('\nCARF avg accuracy = %.3f' % (acc_avg_sum / time))
-print('random forest avg accuracy = %.3f' % (rf_acc_avg_sum / time))
-print('')
+    # init
+    CART_acc_sum = 0
+    rf_acc_sum = 0
+
+    for x in range(time):
+        if print_result=='y':
+            print('\n\n== test %d ==' % (x+1))
+        # shuffle and pick the training set
+        shuffle(data_set[DATA])
+        train_set = data_set[DATA][0:int(math.floor(0.7*total))]
+        test_set = data_set[DATA][int(math.floor(0.7*total)):total]
+
+        # build decision tree
+        decision_tree = dTree.bulid_decision_tree(train_set, data_feature_list[data_set[NAME]])
+
+        # test
+        CART_acc_sum += test_classifier(test_set, decision_tree, dTree.classify, log=print_result)
+
+        # bulid random forest
+        random_forest = rf.build_random_forest(
+            train_set,
+            data_feature_list[data_set[NAME]],
+            dTree.bulid_decision_tree,
+            tree_num=10
+            )
+
+        # test
+        rf_acc_sum += test_classifier(test_set, random_forest, rf.random_forest_classify, dTree.classify, log=print_result)
+
+        # progress bar
+        sys.stdout.write("-")
+        sys.stdout.flush()
+        # pbar.update(1)
+
+    # avg test result
+    # pbar.close()
+    print('\n\n=== test results ===')
+    print('\nCARF avg accuracy = %.3f' % (CART_acc_sum / time))
+    print('random forest avg accuracy = %.3f' % (rf_acc_sum / time))
+    print('')
