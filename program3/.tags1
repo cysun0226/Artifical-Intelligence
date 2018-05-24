@@ -1,0 +1,24 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+sys	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^import sys$/;"	namespace	line:1
+data_file_name	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^data_file_name = str(sys.argv[1])$/;"	variable	line:3
+feature_list	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^feature_list = { 'Iris': [ 's_l', 's_w', 'p_l', 'p_w' ] }$/;"	variable	line:4
+Iris	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^class Iris(object):$/;"	class	line:8
+__init__	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^    def __init__(self, id=None, sepal_l=None, sepal_w=None, petal_l=None, petal_w=None, class_name=None, features=None):$/;"	member	line:9	class:Iris
+__str__	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^    def __str__(self):$/;"	member	line:17	class:Iris	file:
+Node	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^class Node(object):$/;"	class	line:26
+__init__	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^    def __init__(self, left_child=None, right_child=None, feature=None, threshold=None):$/;"	member	line:27	class:Node
+count_class_num	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^def count_class_num(data_set):$/;"	function	line:41
+gini	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^def gini(data_set):$/;"	function	line:50
+split_data	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^def split_data(data_set, feature, threshold):$/;"	function	line:59
+get_feature_values	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^def get_feature_values(data_set, feature):$/;"	function	line:69
+bulid_decision_tree	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^def bulid_decision_tree(data_set, evaluation=gini):$/;"	function	line:75
+iris_data	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^iris_data = []$/;"	variable	line:105
+data	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^    data = data_file.read().splitlines()$/;"	variable	line:112
+idx	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^idx = 0$/;"	variable	line:113
+line	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^    line = line.split(',')$/;"	variable	line:115
+f	C:\Users\user\Documents\Textbook\artificial-intelligence\Artifical-Intelligence\program3\cart.py	/^        f = { 's_l': float(line[0]), 's_w':float(line[1]), 'p_l': float(line[2]), 'p_w': float(line[3]) }$/;"	variable	line:118
