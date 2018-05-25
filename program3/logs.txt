@@ -1,0 +1,46 @@
+===== Iris dataset =====
+
+train_set = 120
+test_set = 30
+
+test time: 100
+print detailed results?(y/n): n
+
+> progress: [----------------------------------------------------------------------------------------------------]
+
+=== test results ===
+
+CARF avg accuracy = 0.941
+random forest avg accuracy = 0.943
+
+
+===== Cross dataset =====
+
+train_set = 159
+test_set = 40
+
+test time: 100
+print detailed results?(y/n): n
+
+> progress: [----------------------------------------------------------------------------------------------------]
+
+=== test results ===
+
+CARF avg accuracy = 0.917
+random forest avg accuracy = 0.919
+
+
+===== Digit dataset =====
+
+train_set = 3058
+test_set = 765
+
+test time: 10
+print detailed results?(y/n): n
+
+> progress: [----------]
+
+=== test results ===
+
+CARF avg accuracy = 0.893
+random forest avg accuracy = 0.958
