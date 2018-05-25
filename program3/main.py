@@ -10,7 +10,7 @@ data_file_1 = str(sys.argv[1])
 data_file_2 = str(sys.argv[2])
 data_file_3 = str(sys.argv[3])
 data_feature_list = { 'Iris': [ 'p_l', 'p_w', 's_l', 's_w' ] }
-train_set_ratio = 0.7
+TRAIN_SET_RATIO = 0.8
 
 # for debug
 def wait_key():
@@ -112,18 +112,19 @@ for line in data:
 data_feature_list['Cross'] = [ 'attr1', 'attr2' ]
 
 
-data_sets = [ (iris_data, 'Iris'), (cross_data, 'Cross'), (digit_data, 'Digit') ]
-# data_file_names = [  ]
+data_sets = [ [iris_data, 'Iris', 0.75], [cross_data, 'Cross', 1], [digit_data, 'Digit', 0.5] ]
+# enum
 DATA = 0
 NAME = 1
+FEATURE_BAG = 2
 
 # testing each data_set
 for data_set in data_sets:
     # print result header
     total = len(data_set[DATA])
     print('\n\n===== ' + data_set[NAME] + ' dataset =====\n')
-    print('train_set = %d' % int(math.floor(train_set_ratio*total)))
-    print('test_set = %d' % (total - math.floor(train_set_ratio*total)))
+    print('train_set = %d' % int(math.floor(TRAIN_SET_RATIO*total)))
+    print('test_set = %d' % (total - math.floor(TRAIN_SET_RATIO*total)))
 
     time = int(input("\ntest time: "))
     print_result = input("print detailed results?(y/n): ")
@@ -159,6 +160,7 @@ for data_set in data_sets:
             train_set,
             data_feature_list[data_set[NAME]],
             dTree.bulid_decision_tree,
+            feature_bag_ratio=data_set[FEATURE_BAG],
             tree_num=10
             )
 
