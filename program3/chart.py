@@ -2,10 +2,18 @@ import sys
 from random import shuffle
 import math
 import operator
+
+# my code
 import CART.decision_tree as dTree
 import random_forest.random_forest as rf
 import testing.test_classifier as test
 import time
+
+# draw chart
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
 
 data_file_1 = str(sys.argv[1])
 data_file_2 = str(sys.argv[2])
@@ -46,7 +54,7 @@ class Cross(object):
         return(self.features[feature])
 
 
-def testing(data_set, train_set_ratio, rf_tree_num, tree_bag_ratio, feature_bag_ratio):
+def testing(data_set, train_set_ratio, rf_tree_num, tree_bag_ratio, feature_bag_ratio, classifier='CART'):
     total = len(data_set['DATA'])
 
     # shuffle and pick the training set
@@ -54,26 +62,26 @@ def testing(data_set, train_set_ratio, rf_tree_num, tree_bag_ratio, feature_bag_
     train_set = data_set['DATA'][0:int(math.floor(train_set_ratio*total))]
     test_set = data_set['DATA'][int(math.floor(train_set_ratio*total)):total]
 
-    # build decision tree
-    decision_tree = dTree.bulid_decision_tree(train_set, data_feature_list[data_set['NAME']])
+    if classifier == 'CART':
+        # build decision tree
+        decision_tree = dTree.bulid_decision_tree(train_set, data_feature_list[data_set['NAME']])
+        # test
+        dTree_result = test.test_classifier(test_set, decision_tree, dTree.classify)
+        return dTree_result
 
-    # test
-    dTree_result = test.test_classifier(test_set, decision_tree, dTree.classify)
-
-    # bulid random forest
-    random_forest = rf.build_random_forest(
-        train_set,
-        data_feature_list[data_set['NAME']],
-        dTree.bulid_decision_tree,
-        feature_bag_ratio=feature_bag_ratio,
-        tree_bag_ratio=tree_bag_ratio,
-        tree_num=rf_tree_num
-        )
-
-    # test
-    rf_result = test.test_classifier(test_set, random_forest, rf.random_forest_classify, dTree.classify)
-
-    return (dTree_result, rf_result)
+    if classifier == 'rf':
+        # bulid random forest
+        random_forest = rf.build_random_forest(
+            train_set,
+            data_feature_list[data_set['NAME']],
+            dTree.bulid_decision_tree,
+            feature_bag_ratio=feature_bag_ratio,
+            tree_bag_ratio=tree_bag_ratio,
+            tree_num=rf_tree_num
+            )
+        # test
+        rf_result = test.test_classifier(test_set, random_forest, rf.random_forest_classify, dTree.classify)
+        return rf_result
 
 def progress_bar(start_time, cur_progress, total):
     end = time.time()
@@ -161,6 +169,16 @@ data_sets = [ {'DATA': iris_data, 'NAME': 'Iris'},
 CART_log = {'Iris':[], 'Cross':[], 'Digit':[]}
 rf_log = {'Iris':[], 'Cross':[], 'Digit':[]}
 
+total_tree_num_log = {}
+total_train_ratio_log = {}
+total_tree_bag_log = {}
+total_feature_bag_log = {}
+
+total_tree_num_label = {}
+total_train_ratio_label = {}
+total_tree_bag_label = {}
+total_feature_bag_label = {}
+
 # testing each data_set
 for data_set in data_sets:
     # print result header
@@ -169,36 +187,126 @@ for data_set in data_sets:
     print('data num = %d' % total)
 
     exec_time = int(input("test time: "))
-    print('')
+    print_result = input("print detailed results?(y/n): ")
 
     # init
     CART_acc_sum = 0
     rf_acc_sum = 0
     train_set_ratio = 0.8
     rf_tree_num = 10
-    tree_bag_ratio = 0.75
-    feature_bag_ratio = 0.75
+    max_tree_num = int(input("\nmax tree num: "))
+    tree_bag_ratio = float(input("default tree bag ratio: "))
+    feature_bag_ratio = float(input("default feature bag ratio: "))
     start = time.time()
 
     tree_num_log = []
+    train_ratio_log = []
+    tree_bag_log = []
+    feature_bag_log = []
+
+    tree_num_label = []
+    train_ratio_label = []
+    tree_bag_label = []
+    feature_bag_label = []
+
 
     for t in range(exec_time):
+        print('\n\n== test %d ==' % (t+1))
+
+        if t == -1:
+            break
+
         CART_acc = []
         rf_acc = []
-        for tree_num in range(1,10+1):
-            CART_result, rf_result = testing(data_set, train_set_ratio, tree_num, tree_bag_ratio, feature_bag_ratio)
-            CART_acc.append(CART_result)
-            rf_acc.append(rf_result)
 
-        # tree_num_log.append(CART_acc)
+        # test trainning_set ratio
+        if print_result == 'y':
+            print('\n\n-- test trainning set ratio --\n')
+        for r in range(50,95+1):
+            CART_result = testing(data_set, float(r)/100, rf_tree_num, tree_bag_ratio, feature_bag_ratio, 'CART')
+            CART_acc.append(CART_result)
+            if t == 0:
+                train_ratio_label.append(float(r)/100)
+            if print_result == 'y':
+                progress_bar(start, r-50, 45)
+        train_ratio_log.append(CART_acc)
+
+        # test tree num in random_forest
+        print('\n\n-- test random forest tree num --\n')
+        rf_acc = []
+        for tree_num in range(1,max_tree_num+1):
+            rf_result = testing(data_set, train_set_ratio, tree_num, tree_bag_ratio, feature_bag_ratio, 'rf')
+            rf_acc.append(rf_result)
+            if t == 0:
+                tree_num_label.append(tree_num)
+            # if print_result == 'y':
+            progress_bar(start, tree_num, max_tree_num)
         tree_num_log.append(rf_acc)
 
-        # progress bar
-        progress_bar(start, t, exec_time)
+        # test tree bag ratio
+        if print_result == 'y':
+            print('\n\n-- test tree bag ratio --\n')
+        rf_acc = []
+        for r in range(1,20+1):
+            rf_result = testing(data_set, train_set_ratio, rf_tree_num, float(r)/20, feature_bag_ratio, 'rf')
+            rf_acc.append(rf_result)
+            if t == 0:
+                tree_bag_label.append(float(r)/20)
+            if print_result == 'y':
+                progress_bar(start, r, 20)
+        tree_bag_log.append(rf_acc)
 
-    avg_tree_num_log = get_result_avg(tree_num_log, exec_time)
-    print(avg_tree_num_log)
+        # test feature bag ratio
+        if print_result == 'y':
+            print('\n\n-- test feature bag ratio --\n')
+        rf_acc = []
+        for r in range(1,20+1):
+            rf_result = testing(data_set, train_set_ratio, rf_tree_num, tree_bag_ratio, float(r)/20, 'rf')
+            rf_acc.append(rf_result)
+            if t == 0:
+                feature_bag_label.append(float(r)/20)
+            if print_result == 'y':
+                progress_bar(start, r, 20)
+        feature_bag_log.append(rf_acc)
+
     # avg test result
+    # total_tree_num_log[data_set['NAME']] =  get_result_avg(tree_num_log, exec_time)
+    # total_tree_num_label[data_set['NAME']] =  tree_num_label
+
+    plt.plot(tree_num_label, get_result_avg(tree_num_log, exec_time))
+    plt.ylim((0.5,1))
+    plt.savefig( data_set['NAME'] + '_tree_num.png')
+    plt.close()
+
+
+    plt.plot(train_ratio_label, get_result_avg(train_ratio_log, exec_time))
+    plt.ylim((0.5,1))
+    plt.savefig( data_set['NAME'] + '_train_ratio.png')
+    plt.close()
+
+    plt.plot(tree_bag_label, get_result_avg(tree_bag_log, exec_time))
+    plt.ylim((0,1))
+    plt.savefig( data_set['NAME'] + '_tree_bag.png')
+    plt.close()
+
+    plt.plot(feature_bag_label, get_result_avg(feature_bag_log, exec_time))
+    plt.ylim((0,1))
+    plt.savefig( data_set['NAME'] + '_feature_bag.png')
+    plt.close()
+
+
+
+
+
+    # total_train_ratio_log[data_set['NAME']] = get_result_avg(train_ratio_log, exec_time)
+    # total_tree_bag_log[data_set['NAME']] = get_result_avg(tree_bag_log, exec_time)
+    # total_feature_bag_log[data_set['NAME']] = get_result_avg(feature_bag_log, exec_time)
+    #
+    # total_train_ratio_label[data_set['NAME']] = train_ratio_label
+    # total_tree_bag_label[data_set['NAME']] = tree_bag_label
+    # total_feature_bag_label[data_set['NAME']] = feature_bag_label
+
+
 
     # print('\n\n=== test results ===')
     # print('\nCARF avg accuracy = %.3f' % (CART_acc_sum / exec_time))
