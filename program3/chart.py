@@ -5,6 +5,7 @@ import operator
 import CART.decision_tree as dTree
 import random_forest.random_forest as rf
 import testing.test_classifier as test
+import time
 
 data_file_1 = str(sys.argv[1])
 data_file_2 = str(sys.argv[2])
@@ -74,6 +75,24 @@ def testing(data_set, train_set_ratio, rf_tree_num, tree_bag_ratio, feature_bag_
 
     return (dTree_result, rf_result)
 
+def progress_bar(start_time, cur_progress, total):
+    end = time.time()
+    elapsed = end - start_time
+    elapsed_s = elapsed % 60
+    elapsed = elapsed / 60
+    if cur_progress == total-1:
+        cur_progress = total
+    i_print = math.floor((cur_progress/total)*50)
+    i_per = (cur_progress/total)*100
+    sys.stdout.write('\r')
+    sys.stdout.write('Exection time: ')
+    sys.stdout.write("%d" % elapsed)
+    sys.stdout.write(' m ')
+    sys.stdout.write("%d" % elapsed_s)
+    sys.stdout.write(' s.  ')
+    sys.stdout.write("[%-50s] %.2f%%" % ('='*i_print, i_per))
+    sys.stdout.flush()
+
 # main
 iris_data = []
 test_data = []
@@ -133,12 +152,6 @@ data_sets = [ {'DATA': iris_data, 'NAME': 'Iris'},
 CART_log = {'Iris':[], 'Cross':[], 'Digit':[]}
 rf_log = {'Iris':[], 'Cross':[], 'Digit':[]}
 
-
-# enum
-DATA = 0
-NAME = 1
-FEATURE_BAG = 2
-
 # testing each data_set
 for data_set in data_sets:
     # print result header
@@ -146,15 +159,8 @@ for data_set in data_sets:
     print('\n\n===== ' + data_set['NAME'] + ' dataset =====\n')
     print('data num = %d' % total)
 
-    time = int(input("test time: "))
+    exec_time = int(input("test time: "))
     print('')
-
-    # progress bar
-    pbar_width = time
-    # setup toolbar
-    sys.stdout.write("> progress: [%s]" % (" " * pbar_width))
-    sys.stdout.flush()
-    sys.stdout.write("\b" * (pbar_width+1)) # return to start of line, after '['
 
     # init
     CART_acc_sum = 0
@@ -163,19 +169,18 @@ for data_set in data_sets:
     rf_tree_num = 10
     tree_bag_ratio = 0.75
     feature_bag_ratio = 0.75
+    start = time.time()
 
-    for x in range(time):
+    for t in range(exec_time):
         CART_result, rf_result = testing(data_set, train_set_ratio, rf_tree_num, tree_bag_ratio, feature_bag_ratio)
         CART_acc_sum += CART_result
         rf_acc_sum += rf_result
 
         # progress bar
-        sys.stdout.write("-")
-        sys.stdout.flush()
-        # pbar.update(1)
+        progress_bar(start, t, exec_time)
 
     # avg test result
     # pbar.close()
     print('\n\n=== test results ===')
-    print('\nCARF avg accuracy = %.3f' % (CART_acc_sum / time))
-    print('random forest avg accuracy = %.3f' % (rf_acc_sum / time))
+    print('\nCARF avg accuracy = %.3f' % (CART_acc_sum / exec_time))
+    print('random forest avg accuracy = %.3f' % (rf_acc_sum / exec_time))
