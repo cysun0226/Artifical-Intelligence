@@ -4,6 +4,7 @@ import math
 import operator
 import CART.decision_tree as dTree
 import random_forest.random_forest as rf
+import testing.test_classifier as test
 
 data_file_1 = str(sys.argv[1])
 data_file_2 = str(sys.argv[2])
@@ -56,29 +57,6 @@ class Cross(object):
     def __getitem__(self, feature):
         return(self.features[feature])
 
-# testing
-def test_classifier(test_set, decision_tree, classify_function, forest_classify=None, log='n', classifier_name='result'):
-    if log == 'y':
-        print('\n-- ' + classifier_name + ' --\n')
-    correct = 0.0
-    for data in test_set:
-        if forest_classify == None:
-            predict = classify_function(data, decision_tree)
-        else:
-            predict = classify_function(data, decision_tree, forest_classify)
-
-        if predict == data.class_name:
-            correct += 1
-            if log == 'y':
-                print('[correct] data = {0:15}'.format(data.class_name) + ' | predict = ' + predict)
-        else:
-            if log == 'y':
-                print('[ wrong ] data = {0:15}'.format(data.class_name) + ' | predict = ' + predict)
-
-    accuracy = correct / len(test_set)
-    if log == 'y':
-        print('\n\naccuracy = %.3f' % accuracy)
-    return accuracy
 
 # main
 iris_data = []
@@ -174,7 +152,7 @@ for data_set in data_sets:
         decision_tree = dTree.bulid_decision_tree(train_set, data_feature_list[data_set[NAME]])
 
         # test
-        CART_acc_sum += test_classifier(test_set, decision_tree, dTree.classify, log=print_result)
+        CART_acc_sum += test.test_classifier(test_set, decision_tree, dTree.classify, log=print_result)
 
         # bulid random forest
         random_forest = rf.build_random_forest(
@@ -185,7 +163,7 @@ for data_set in data_sets:
             )
 
         # test
-        rf_acc_sum += test_classifier(test_set, random_forest, rf.random_forest_classify, dTree.classify, log=print_result)
+        rf_acc_sum += test.test_classifier(test_set, random_forest, rf.random_forest_classify, dTree.classify, log=print_result)
 
         # progress bar
         sys.stdout.write("-")
