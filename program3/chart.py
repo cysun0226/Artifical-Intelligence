@@ -187,6 +187,8 @@ for data_set in data_sets:
     print('data num = %d' % total)
 
     exec_time = int(input("test time: "))
+    if exec_time == -1:
+        continue
     print_result = input("print detailed results?(y/n): ")
 
     # init
@@ -197,6 +199,7 @@ for data_set in data_sets:
     max_tree_num = int(input("\nmax tree num: "))
     tree_bag_ratio = float(input("default tree bag ratio: "))
     feature_bag_ratio = float(input("default feature bag ratio: "))
+    only_tree = input("only tree num?(y/n)")
     start = time.time()
 
     tree_num_log = []
@@ -209,30 +212,29 @@ for data_set in data_sets:
     tree_bag_label = []
     feature_bag_label = []
 
-
     for t in range(exec_time):
         print('\n\n== test %d ==' % (t+1))
-
-        if t == -1:
-            break
 
         CART_acc = []
         rf_acc = []
 
-        # test trainning_set ratio
-        if print_result == 'y':
-            print('\n\n-- test trainning set ratio --\n')
-        for r in range(50,95+1):
-            CART_result = testing(data_set, float(r)/100, rf_tree_num, tree_bag_ratio, feature_bag_ratio, 'CART')
-            CART_acc.append(CART_result)
-            if t == 0:
-                train_ratio_label.append(float(r)/100)
+        if only_tree != 'y':
+            # test trainning_set ratio
+            start = time.time()
             if print_result == 'y':
-                progress_bar(start, r-50, 45)
-        train_ratio_log.append(CART_acc)
+                print('\n\n-- test trainning set ratio --\n')
+            for r in range(10):
+                CART_result = testing(data_set, 0.5+0.05*r, rf_tree_num, tree_bag_ratio, feature_bag_ratio, 'CART')
+                CART_acc.append(CART_result)
+                if t == 0:
+                    train_ratio_label.append(0.5+0.05*r)
+                if print_result == 'y':
+                    progress_bar(start, r, 10)
+            train_ratio_log.append(CART_acc)
 
         # test tree num in random_forest
         print('\n\n-- test random forest tree num --\n')
+        start = time.time()
         rf_acc = []
         for tree_num in range(1,max_tree_num+1):
             rf_result = testing(data_set, train_set_ratio, tree_num, tree_bag_ratio, feature_bag_ratio, 'rf')
@@ -243,31 +245,35 @@ for data_set in data_sets:
             progress_bar(start, tree_num, max_tree_num)
         tree_num_log.append(rf_acc)
 
-        # test tree bag ratio
-        if print_result == 'y':
-            print('\n\n-- test tree bag ratio --\n')
-        rf_acc = []
-        for r in range(1,20+1):
-            rf_result = testing(data_set, train_set_ratio, rf_tree_num, float(r)/20, feature_bag_ratio, 'rf')
-            rf_acc.append(rf_result)
-            if t == 0:
-                tree_bag_label.append(float(r)/20)
+        if only_tree != 'y':
+            # test tree bag ratio
+            start = time.time()
             if print_result == 'y':
-                progress_bar(start, r, 20)
-        tree_bag_log.append(rf_acc)
+                print('\n\n-- test tree bag ratio --\n')
+            rf_acc = []
+            for r in range(1,20+1):
+                rf_result = testing(data_set, train_set_ratio, rf_tree_num, float(r)/20, feature_bag_ratio, 'rf')
+                rf_acc.append(rf_result)
+                if t == 0:
+                    tree_bag_label.append(float(r)/20)
+                if print_result == 'y':
+                    progress_bar(start, r, 20)
+            tree_bag_log.append(rf_acc)
 
-        # test feature bag ratio
-        if print_result == 'y':
-            print('\n\n-- test feature bag ratio --\n')
-        rf_acc = []
-        for r in range(1,20+1):
-            rf_result = testing(data_set, train_set_ratio, rf_tree_num, tree_bag_ratio, float(r)/20, 'rf')
-            rf_acc.append(rf_result)
-            if t == 0:
-                feature_bag_label.append(float(r)/20)
+        if only_tree != 'y':
+            # test feature bag ratio
+            start = time.time()
             if print_result == 'y':
-                progress_bar(start, r, 20)
-        feature_bag_log.append(rf_acc)
+                print('\n\n-- test feature bag ratio --\n')
+            rf_acc = []
+            for r in range(1,20+1):
+                rf_result = testing(data_set, train_set_ratio, rf_tree_num, tree_bag_ratio, float(r)/20, 'rf')
+                rf_acc.append(rf_result)
+                if t == 0:
+                    feature_bag_label.append(float(r)/20)
+                if print_result == 'y':
+                    progress_bar(start, r, 20)
+            feature_bag_log.append(rf_acc)
 
     # avg test result
     # total_tree_num_log[data_set['NAME']] =  get_result_avg(tree_num_log, exec_time)
@@ -278,6 +284,8 @@ for data_set in data_sets:
     plt.savefig( data_set['NAME'] + '_tree_num.png')
     plt.close()
 
+    if only_tree == 'y':
+        continue
 
     plt.plot(train_ratio_label, get_result_avg(train_ratio_log, exec_time))
     plt.ylim((0.5,1))
