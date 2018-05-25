@@ -93,6 +93,15 @@ def progress_bar(start_time, cur_progress, total):
     sys.stdout.write("[%-50s] %.2f%%" % ('='*i_print, i_per))
     sys.stdout.flush()
 
+def get_result_avg(log, exec_time):
+    avg_log = []
+    for i in range(len(log[0])):
+        acc_sum = 0.0
+        for exec_t in range(exec_time):
+            acc_sum += log[exec_t][i]
+        avg_log.append(acc_sum/exec_time)
+    return avg_log
+
 # main
 iris_data = []
 test_data = []
@@ -171,16 +180,26 @@ for data_set in data_sets:
     feature_bag_ratio = 0.75
     start = time.time()
 
+    tree_num_log = []
+
     for t in range(exec_time):
-        CART_result, rf_result = testing(data_set, train_set_ratio, rf_tree_num, tree_bag_ratio, feature_bag_ratio)
-        CART_acc_sum += CART_result
-        rf_acc_sum += rf_result
+        CART_acc = []
+        rf_acc = []
+        for tree_num in range(1,10+1):
+            CART_result, rf_result = testing(data_set, train_set_ratio, tree_num, tree_bag_ratio, feature_bag_ratio)
+            CART_acc.append(CART_result)
+            rf_acc.append(rf_result)
+
+        # tree_num_log.append(CART_acc)
+        tree_num_log.append(rf_acc)
 
         # progress bar
         progress_bar(start, t, exec_time)
 
+    avg_tree_num_log = get_result_avg(tree_num_log, exec_time)
+    print(avg_tree_num_log)
     # avg test result
-    # pbar.close()
-    print('\n\n=== test results ===')
-    print('\nCARF avg accuracy = %.3f' % (CART_acc_sum / exec_time))
-    print('random forest avg accuracy = %.3f' % (rf_acc_sum / exec_time))
+
+    # print('\n\n=== test results ===')
+    # print('\nCARF avg accuracy = %.3f' % (CART_acc_sum / exec_time))
+    # print('random forest avg accuracy = %.3f' % (rf_acc_sum / exec_time))
