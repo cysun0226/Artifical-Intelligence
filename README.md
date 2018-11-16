@@ -8,7 +8,7 @@ It is a "Five in a Row" game project, which includes:
 - game-playing agent
   - implement by Minimax(Negamax) and Alpha-Beta pruning
 - Chessboard displaying program
-- judge program (provide by course)
+- judge program (provided by the course)
 
 ## program 3 - Decision Tree & Random Forest
 Implement a decision tree and afterward bulid a forest.
